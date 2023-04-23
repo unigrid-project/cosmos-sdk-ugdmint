@@ -1,0 +1,44 @@
+syntax = "proto3";
+package cosmos.ugdmint.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/ugdmint/v1beta1/params.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/unigrid-project/cosmos-sdk/x/ugdmint/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "cosmos/ugdmint/v1beta1/params";
+  }
+
+  // Subsidy halving interval
+  rpc SubsidyHalvingInterval(QuerySubsidyHalvingIntervalRequest) returns (QuerySubsidyHalvingIntervalResponse) {
+    option (google.api.http).get = "cosmos/ugdmint/v1beta1/subsidy_halving_interval";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// QuerySubsidyHalvingIntervalRequest is the request type for the Query/SubsidyHalvingInterval RPC method.
+message QuerySubsidyHalvingIntervalRequest {}
+
+// QuerySubsidyHalvingIntervalResponse is the response type for the Query/SubsidyHalvingInterval RPC method.
+message QuerySubsidyHalvingIntervalResponse {
+  // subsidy halving interval value.
+  bytes subsidy_halving_interval = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", 
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
