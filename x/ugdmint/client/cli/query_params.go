@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/unigrid-project/cosmos-sdk/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 	"github.com/spf13/cobra"
 )
 
