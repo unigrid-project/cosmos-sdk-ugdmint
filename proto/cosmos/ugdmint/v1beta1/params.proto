@@ -5,37 +5,36 @@ import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/unigrid-project/cosmos-sdk/x/ugdmint/types";
+option go_package = "github.com/cosmos/cosmos-sdk/x/ugdmint/types";
 
 // Minter represents the minting state.
 message Minter {
   // current subsidy halving interval
   string subsidy_halving_interval = 1 [
     (cosmos_proto.scalar)  = "cosmos.Dec",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", 
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
 }
 
 // Params defines the parameters for the module.
 message Params {
-  option (amino.name) = "cosmos-sdk/x/ugdmint/Params";
-  
+  option (gogoproto.goproto_stringer) = false;
+  option (amino.name)                 = "cosmos-sdk/x/ugdmint/Params";
+
   // type of coin to mint
   string mint_denom = 1;
   // subsidy halving interval
   string subsidy_halving_interval = 2 [
     (cosmos_proto.scalar)  = "cosmos.Dec",
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec", 
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
   ];
   // goal of percent bonded atoms
   string goal_bonded = 3 [
     (cosmos_proto.scalar)  = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false,
-    (amino.dont_omitempty) = true
+    (gogoproto.nullable)   = false
   ];
   // expected blocks per year
   uint64 blocks_per_year = 4;

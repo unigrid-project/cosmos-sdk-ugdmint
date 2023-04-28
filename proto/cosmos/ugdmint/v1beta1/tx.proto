@@ -1,7 +1,7 @@
 syntax = "proto3";
 package cosmos.ugdmint.v1beta1;
 
-option go_package = "github.com/unigrid-project/cosmos-sdk/x/ugdmint/types";
+option go_package = "github.com/cosmos/cosmos-sdk/x/ugdmint/types";
 
 import "cosmos/msg/v1/msg.proto";
 import "amino/amino.proto";
