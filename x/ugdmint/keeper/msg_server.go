@@ -3,12 +3,14 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
+
+var _ types.MsgServer = msgServer{}
 
 type msgServer struct {
 	Keeper

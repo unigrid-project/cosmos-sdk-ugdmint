@@ -28,10 +28,9 @@ func NewGenesisState(minter Minter, params Params) *GenesisState {
 	}
 }
 
-// DefaultGenesis returns the default genesis state
-func DefaultGenesis() *GenesisState {
+// DefaultGenesisState creates a default GenesisState object
+func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
-		// this line is used by starport scaffolding # genesis/types/default
 		Minter: DefaultInitialMinter(),
 		Params: DefaultParams(),
 	}

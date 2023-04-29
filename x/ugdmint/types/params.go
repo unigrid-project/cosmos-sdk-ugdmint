@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/math"
+	"sigs.k8s.io/yaml"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -47,6 +48,12 @@ func (p Params) Validate() error {
 		return err
 	}
 	return nil
+}
+
+// String implements the Stringer interface.
+func (p Params) String() string {
+	out, _ := yaml.Marshal(p)
+	return string(out)
 }
 
 func validateMintDenom(i interface{}) error {

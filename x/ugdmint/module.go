@@ -4,20 +4,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
-	// this line is used by starport scaffolding # 1
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	abci "github.com/cometbft/cometbft/abci/types"
+	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	modulev1 "github.com/unigrid-project/cosmos-sdk-ugdmint/api/cosmos/ugdmint/module/v1"
+	"cosmossdk.io/core/appmodule"
+
+	"cosmossdk.io/depinject"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	store "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/client/cli"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/simulation"
@@ -83,7 +88,7 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *g
 
 // GetTxCmd returns the root Tx command for the module. The subcommands of this root command are used by end-users to generate new transactions containing messages defined in the module
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return cli.GetTxCmd()
+	return nil
 }
 
 // GetQueryCmd returns the root query command for the module. The subcommands of this root command are used by end-users to generate new queries to the subset of the state defined by the module
