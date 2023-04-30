@@ -24,13 +24,14 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/client/cli"
+	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/exported"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/simulation"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
 // ConsensusVersion defines the current x/ugdmint module consensus version.
-const ConsensusVersion = 2
+const ConsensusVersion = 1
 
 var (
 	_ module.BeginBlockAppModule = AppModule{}
@@ -147,12 +148,6 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
-
-	m := keeper.NewMigrator(am.keeper, am.legacySubspace)
-
-	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
-	}
 }
 
 // InitGenesis performs genesis initialization for the mint module. It returns
