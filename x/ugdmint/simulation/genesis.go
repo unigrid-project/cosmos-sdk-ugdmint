@@ -21,7 +21,7 @@ const (
 
 // GenSubsidyHalvingInterval randomized subsidy halving interval
 func GenSubsidyHalvingInterval(r *rand.Rand) math.LegacyDec {
-	return sdk.NewDecWithPrec(int64(r.Intn(99)), 2)
+	return sdk.NewDecWithPrec(int64(r.Intn(99)), 0)
 }
 
 // GenGoalBonded randomized GoalBonded

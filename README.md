@@ -98,18 +98,8 @@ It should run a `go mod tidy` before the build that will pull this module down b
 ## Run
 Follow the specific documentation for your cosmos chain to setup and run your chain.  If it is base cosmos-sdk, that documentation is found at:
 
-[Running a Node](https://docs.cosmos.network/v0.47/run-node/run-node)
+- [Running a Node](https://docs.cosmos.network/v0.47/run-node/run-node)
 
 ## Learn more
 
 - [Cosmos SDK docs](https://docs.cosmos.network/v0.47)
-
-# code snippets
-
-Do the code man!
-
-https://github.com/unigrid-project/cosmos-sdk-ugdmint/blob/v0.0.5/proto/cosmos/ugdmint/v1beta1/params.proto#L10-L18
-
-https://github.com/cosmos/cosmos-sdk/blob/v0.47.0-rc1/proto/cosmos/mint/v1beta1/mint.proto#L10-L24
-
-https://github.com/cosmos/cosmos-sdk/blob/92247cb0e9fdaed30b1db7d3cc7a05f7efe79828/proto/cosmos/mint/v1beta1/mint.proto#LL10C1-L24C2

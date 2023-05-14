@@ -57,10 +57,12 @@ func (m Minter) BlockProvision(params Params, height uint64) sdk.Coin {
 		nSubsidy = 1
 	}
 
-	nBehalf := sdk.NewDec(int64(height)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
-	
-	for i := 0; i < int(nBehalf); i++ {
-		nSubsidy = nSubsidy * 99 / 100
+	if (height > 1000000) {
+		nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
+		
+		for i := 0; i < int(nBehalf); i++ {
+			nSubsidy = nSubsidy * 99 / 100
+		}
 	}
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
