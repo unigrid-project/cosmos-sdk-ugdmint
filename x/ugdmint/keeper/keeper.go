@@ -12,8 +12,8 @@ import (
 
 type (
 	Keeper struct {
-		cdc        		codec.BinaryCodec
-		storeKey   		storetypes.StoreKey
+		cdc              codec.BinaryCodec
+		storeKey         storetypes.StoreKey
 		stakingKeeper    types.StakingKeeper
 		bankKeeper       types.BankKeeper
 		feeCollectorName string
@@ -39,8 +39,8 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:        	  cdc,
-		storeKey:   	  key,
+		cdc:              cdc,
+		storeKey:         key,
 		stakingKeeper:    sk,
 		bankKeeper:       bk,
 		feeCollectorName: feeCollectorName,
@@ -104,4 +104,9 @@ func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
 // AddCollectedFees to be used in BeginBlocker.
 func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, fees)
+}
+
+// Send coins to new mint
+func (k Keeper) AddNewMint(ctx sdk.Context, coins sdk.Coins, reciver sdk.AccAddress) error {
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, reciver, coins)
 }
