@@ -3,98 +3,148 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"http"
+	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gin-gonic/gin"
-	"github.com/patrickmn/go-cache"
 )
 
 type HedgehogData struct {
-	entry map[string]string
+	Key    string
+	amount string
 }
 
 type Mint struct {
 	address string
-	amount 	string
-	heigth	string
+	amount  string
+	heigth  string
 }
 
 type mintCache struct {
 	stop chan struct{}
 
-	wg	sync.WaitGroup
-	mu 	sync.RWMutex
+	wg    sync.WaitGroup
+	mu    sync.RWMutex
 	mints map[int64]Mint
 
 	//mints *cache.Cache
 }
 
 const (
-	defaultExperation = 1 * time.Minute
-	purgeTime         = 2 * time.Minute
+	defaultExperation   = 1 * time.Minute
+	cacheUpdateInterval = 2 * time.Minute
 )
 
 var c = newCache()
 
-//parse hedgehog data
-func parse() {
-
-}
-
-func (c *mintCache) cleanupCache() {
-	t := time.NewTicker(purgeTime)
+func (mc *mintCache) cleanupCache() {
+	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
+
+	blockHeigth := sdk.Context.BlockHeight()
+
+	for {
+		select {
+		case <-mc.stop:
+			return
+		case <-t.C:
+			mc.mu.Lock()
+			//update cache with new etries if any are found
+			for h, mc := range c.mints {
+				if h < blockHeigth { //current heigth.
+					deleteFromCache(h)
+				}
+			}
+			mc.mu.Unlock()
+		}
+	}
 }
 
 func newCache() *mintCache {
-	Cache := cache.New(defaultExperation, purgeTime)
-	return &mintCache{
-		mints: Cache,
-	}
-}
-
-func (c *mintCache) read(heigth int64) (item []byte, ok bool) {
-	mint, ok := c.mints.Get(heigth)
-
-	if ok {
-		res, err := json.Marshal(mint.(Mint))
-		if err != nil {
-
-		}
-		return res, true
+	mc := &mintCache{
+		mints: make(map[int64]Mint),
+		stop:  make(chan struct{}),
 	}
 
-	return nil, false
+	mc.wg.Add(1)
+	go func() {
+		defer mc.wg.Done()
+		mc.cleanupCache()
+	}()
+
+	return mc
 }
 
-func (c *mintCache) updateCache(heigth int64, mint Mint) {
-	c.mints.Set(heigth, mint, cache.DefaultExpiration)
+func (mc *mintCache) read(heigth int64) (Mint, error) {
+
+	mc.mu.RLock()
+	defer c.mu.RUnlock()
+
+	cm, ok := mc.mints[heigth]
+	if !ok {
+		return Mint{}, errMintNotFound
+	}
+	return cm, nil
 }
 
-func (c *mintCache) delete(heigth int64) {
-
+func (mc *mintCache) updateCache(heigth int64, mint Mint) {
+	mc.mints[heigth] = mint
 }
 
-func checkCache(heigth int64) Mint {
+func (mc *mintCache) deleteFromCache(heigth int64) {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	res, ok := c.read(heigth)
-	if ok {
+	delete(mc.mints, heigth)
+}
+
+func checkCache(heigth int64) (mint Mint) {
+
+	res, err := c.read(heigth)
+	if err != nil {
 		return res
 	}
-	mint Mint
+
 	return mint
 
 }
 
-func callHedgehog(endpoint string) {
+func callHedgehog(endpoint string, mints map[int64]Mint) {
 	response, err := http.Get("https://127.0.0.1:52884/" + endpoint)
-}
 
-func getMints(c *gin.Context) {
-	c.IndentJSON(http.StatusOK, Mint)
+	if err != nil {
+		panic("where is hedgehog")
+	}
+	defer response.Body.Close()
+	var res map[string]string
+	e := json.NewDecoder(response.Body).Decode(&res)
+
+	if e != nil {
+		//report response error in log
+		return
+	}
+
+	blockHeigth := sdk.Context.BlockHeight()
+
+	for key, amount := range res {
+		var mint Mint
+		arr := strings.Split(key, "/")
+		a := arr[0]
+		heigth := arr[1]
+		h, er := strconv.ParseInt(heigth, 10, 64)
+
+		if h >= blockHeigth {
+			mints[h] = Mint{
+				address: a,
+				heigth:  heigth,
+				amount:  amount,
+			}
+		}
+	}
+
 }
 
 // NewMinter returns a new Minter object with the given subsidy halving interval.
