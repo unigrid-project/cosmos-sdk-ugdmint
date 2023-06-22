@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"https://github.com/unigrid-project/cosmos-sdk-ugdmint"
+	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
 const (
@@ -132,7 +132,7 @@ func TestCanMintFromHedgehog(t *testing.T) {
 	server.StartTLS()
 
 	defer server.Close()
-	cache := types.minter.newCache()
+	cache := types.DefaultGenesisState().Minter.NewCache()
 
 	cache.callHedgehog("mint-storage")
 }

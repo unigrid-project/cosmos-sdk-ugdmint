@@ -62,7 +62,7 @@ func (mc *mintCache) cleanupCache() {
 	}
 }
 
-func newCache() *mintCache {
+func NewCache() *mintCache {
 	mc := &mintCache{
 		mints: make(map[int64]Mint),
 		stop:  make(chan struct{}),
