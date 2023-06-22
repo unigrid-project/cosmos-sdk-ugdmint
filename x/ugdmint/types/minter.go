@@ -38,13 +38,11 @@ const (
 	cacheUpdateInterval = 2 * time.Minute
 )
 
-var c = newCache()
-
 func (mc *mintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
 
-	blockHeigth := sdk.Context.BlockHeight()
+	blockHeigth := sdk.Context.BlockHeight(sdk.Context{})
 
 	for {
 		select {
@@ -53,9 +51,10 @@ func (mc *mintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
-			for h, mc := range c.mints {
+			mc.callHedgehog("mint-storage")
+			for h := range mc.mints {
 				if h < blockHeigth { //current heigth.
-					deleteFromCache(h)
+					mc.deleteFromCache(h)
 				}
 			}
 			mc.mu.Unlock()
@@ -81,11 +80,11 @@ func newCache() *mintCache {
 func (mc *mintCache) read(heigth int64) (Mint, error) {
 
 	mc.mu.RLock()
-	defer c.mu.RUnlock()
+	defer mc.mu.RUnlock()
 
 	cm, ok := mc.mints[heigth]
 	if !ok {
-		return Mint{}, errMintNotFound
+		return Mint{}, ErrIntOverflowGenesis
 	}
 	return cm, nil
 }
@@ -101,9 +100,9 @@ func (mc *mintCache) deleteFromCache(heigth int64) {
 	delete(mc.mints, heigth)
 }
 
-func checkCache(heigth int64) (mint Mint) {
+func (mc *mintCache) checkCache(heigth int64) (mint Mint) {
 
-	res, err := c.read(heigth)
+	res, err := mc.read(heigth)
 	if err != nil {
 		return res
 	}
@@ -112,7 +111,7 @@ func checkCache(heigth int64) (mint Mint) {
 
 }
 
-func callHedgehog(endpoint string, mints map[int64]Mint) {
+func (mc *mintCache) callHedgehog(endpoint string) {
 	response, err := http.Get("https://127.0.0.1:52884/" + endpoint)
 
 	if err != nil {
@@ -127,17 +126,20 @@ func callHedgehog(endpoint string, mints map[int64]Mint) {
 		return
 	}
 
-	blockHeigth := sdk.Context.BlockHeight()
+	blockHeigth := sdk.Context.BlockHeight(sdk.Context{})
 
 	for key, amount := range res {
-		var mint Mint
 		arr := strings.Split(key, "/")
 		a := arr[0]
 		heigth := arr[1]
 		h, er := strconv.ParseInt(heigth, 10, 64)
 
-		if h >= blockHeigth {
-			mints[h] = Mint{
+		if er != nil {
+			panic("error")
+		}
+
+		if h >= blockHeigth && strings.Contains(a, "unigrid1") {
+			mc.mints[h] = Mint{
 				address: a,
 				heigth:  heigth,
 				amount:  amount,
