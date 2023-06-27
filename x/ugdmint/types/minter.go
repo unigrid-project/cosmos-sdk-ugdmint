@@ -1,6 +1,7 @@
 package types
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,8 +20,22 @@ type HedgehogData struct {
 
 type Mint struct {
 	address string
-	amount  string
+	amount  int
 	heigth  string
+}
+
+type mints struct {
+	mints map[string]int
+}
+
+type hedgehogdata struct {
+	timestamp         string `json:"timestamp"`
+	previousTimeStamp string `json:"previousTimeStamp"`
+	flags             int    `json:"flags"`
+	hedgehogtype      string `json:"type"`
+	data              mints  `json:"data"`
+	previousData      mints  `json:"previousData"`
+	signature         string `json:"signature"`
 }
 
 type mintCache struct {
@@ -111,24 +126,29 @@ func (mc *mintCache) checkCache(heigth int64) (mint Mint) {
 
 }
 
-func (mc *mintCache) callHedgehog(endpoint string) {
-	response, err := http.Get("https://127.0.0.1:52884/" + endpoint)
+func (mc *mintCache) callHedgehog(serverUrl string) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	response, err := client.Get(serverUrl)
 
 	if err != nil {
-		panic("where is hedgehog")
+		panic("where is hedgehog " + err.Error())
 	}
 	defer response.Body.Close()
-	var res map[string]string
+	var res hedgehogdata
 	e := json.NewDecoder(response.Body).Decode(&res)
 
 	if e != nil {
+		fmt.Println(e.Error())
 		//report response error in log
 		return
 	}
 
 	blockHeigth := sdk.Context.BlockHeight(sdk.Context{})
 
-	for key, amount := range res {
+	for key, amount := range res.data.mints {
 		arr := strings.Split(key, "/")
 		a := arr[0]
 		heigth := arr[1]
