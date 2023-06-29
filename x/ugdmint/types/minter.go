@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,29 +14,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type HedgehogData struct {
-	Key    string
-	amount string
-}
-
 type Mint struct {
 	address string
 	amount  int
 	heigth  string
 }
 
-type mints struct {
-	mints map[string]int
+type Mints struct {
+	Mints map[string]int
 }
 
-type hedgehogdata struct {
-	timestamp         string `json:"timestamp"`
-	previousTimeStamp string `json:"previousTimeStamp"`
-	flags             int    `json:"flags"`
-	hedgehogtype      string `json:"type"`
-	data              mints  `json:"data"`
-	previousData      mints  `json:"previousData"`
-	signature         string `json:"signature"`
+type HedgehogData struct {
+	Timestamp         string `json:"timestamp"`
+	PreviousTimeStamp string `json:"previousTimeStamp"`
+	Flags             int    `json:"flags"`
+	Hedgehogtype      string `json:"type"`
+	Data              Mints  `json:"data"`
+	PreviousData      Mints  `json:"previousData"`
+	Signature         string `json:"signature"`
 }
 
 type mintCache struct {
@@ -66,7 +62,7 @@ func (mc *mintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
-			mc.callHedgehog("mint-storage")
+			mc.callHedgehog("https://127.0.0.1:52448/gridspork/mint-storage")
 			for h := range mc.mints {
 				if h < blockHeigth { //current heigth.
 					mc.deleteFromCache(h)
@@ -137,8 +133,17 @@ func (mc *mintCache) callHedgehog(serverUrl string) {
 		panic("where is hedgehog " + err.Error())
 	}
 	defer response.Body.Close()
-	var res hedgehogdata
-	e := json.NewDecoder(response.Body).Decode(&res)
+	var res HedgehogData
+	body, err1 := io.ReadAll(response.Body)
+
+	if err1 != nil {
+		fmt.Println(err1.Error())
+		//report response error in log
+		return
+	}
+
+	e := json.Unmarshal(body, &res)
+	//e := json.NewDecoder(response.Body).Decode(res)
 
 	if e != nil {
 		fmt.Println(e.Error())
@@ -148,7 +153,7 @@ func (mc *mintCache) callHedgehog(serverUrl string) {
 
 	blockHeigth := sdk.Context.BlockHeight(sdk.Context{})
 
-	for key, amount := range res.data.mints {
+	for key, amount := range res.Data.Mints {
 		arr := strings.Split(key, "/")
 		a := arr[0]
 		heigth := arr[1]

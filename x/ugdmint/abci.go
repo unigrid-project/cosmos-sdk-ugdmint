@@ -49,4 +49,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
 		),
 	)
+
+	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
+	//mc := minter.NewCache()
 }
