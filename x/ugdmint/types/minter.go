@@ -45,9 +45,11 @@ type mintCache struct {
 }
 
 const (
-	defaultExperation   = 1 * time.Minute
-	cacheUpdateInterval = 2 * time.Minute
+	//defaultExperation   = 1 * time.Minute
+	cacheUpdateInterval = 30 * time.Second
 )
+
+var c = NewCache()
 
 func (mc *mintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
@@ -73,6 +75,10 @@ func (mc *mintCache) cleanupCache() {
 	}
 }
 
+func getCache() *mintCache {
+	return c
+}
+
 func NewCache() *mintCache {
 	mc := &mintCache{
 		mints: make(map[int64]Mint),
@@ -88,7 +94,7 @@ func NewCache() *mintCache {
 	return mc
 }
 
-func (mc *mintCache) read(heigth int64) (Mint, error) {
+func (mc *mintCache) read(heigth uint64) (Mint, error) {
 
 	mc.mu.RLock()
 	defer mc.mu.RUnlock()
@@ -120,6 +126,14 @@ func (mc *mintCache) checkCache(heigth int64) (mint Mint) {
 
 	return mint
 
+}
+
+func convertIntToCoin(params Params, amount int) sdk.Coin {
+	return sdk.NewCoin(params.MintDenom, sdk.NewInt(int64(amount)))
+}
+
+func convertStringToAcc(address string) (sdk.AccAddress, error) {
+	return sdk.AccAddressFromBech32(address)
 }
 
 func (mc *mintCache) callHedgehog(serverUrl string) {
@@ -207,31 +221,19 @@ func ValidateMinter(minter Minter) error {
 
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
-func (m Minter) BlockProvision(params Params, height uint64) sdk.Coin {
+func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coin {
 
-	nSubsidy := 1
+	var nSubsidy float64 = 1
 
-	/*if (height == 1) {
-		nSubsidy = 1200000
-	} else if (height >= 5000 && height < 1050000) {
-		nSubsidy = 8
-	} else if (height >= 1050000 && height < 2100000) {
-		nSubsidy = 6
-	} else if (height >= 2100000 && height < 3150000) {
-		nSubsidy = 4
-	} else if (height >= 3150000 && height < 4200000) {
-		nSubsidy = 2
-	} else if (height >= 4200000 && height < 12600000) {
-		nSubsidy = 1
-	}*/
+	height = height + 2500000
 
-	if height > 1000000 {
-		nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
+	nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
 
-		for i := 0; i < int(nBehalf); i++ {
-			nSubsidy = nSubsidy * 99 / 100
-		}
+	for i := 0; i < int(nBehalf); i++ {
+		nSubsidy = nSubsidy * 99 / 100
 	}
+
+	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second() - prevCtx.BlockTime().Second()) / 60)
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
