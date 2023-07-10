@@ -39,7 +39,7 @@ type mintCache struct {
 
 	wg    sync.WaitGroup
 	mu    sync.RWMutex
-	mints map[int64]Mint
+	mints map[uint64]Mint
 
 	//mints *cache.Cache
 }
@@ -66,7 +66,7 @@ func (mc *mintCache) cleanupCache() {
 			//update cache with new etries if any are found
 			mc.callHedgehog("https://127.0.0.1:52448/gridspork/mint-storage")
 			for h := range mc.mints {
-				if h < blockHeigth { //current heigth.
+				if h < uint64(blockHeigth) { //current heigth.
 					mc.deleteFromCache(h)
 				}
 			}
@@ -81,7 +81,7 @@ func getCache() *mintCache {
 
 func NewCache() *mintCache {
 	mc := &mintCache{
-		mints: make(map[int64]Mint),
+		mints: make(map[uint64]Mint),
 		stop:  make(chan struct{}),
 	}
 
@@ -106,18 +106,18 @@ func (mc *mintCache) read(heigth uint64) (Mint, error) {
 	return cm, nil
 }
 
-func (mc *mintCache) updateCache(heigth int64, mint Mint) {
+func (mc *mintCache) updateCache(heigth uint64, mint Mint) {
 	mc.mints[heigth] = mint
 }
 
-func (mc *mintCache) deleteFromCache(heigth int64) {
+func (mc *mintCache) deleteFromCache(heigth uint64) {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 
 	delete(mc.mints, heigth)
 }
 
-func (mc *mintCache) checkCache(heigth int64) (mint Mint) {
+func (mc *mintCache) checkCache(heigth uint64) (mint Mint) {
 
 	res, err := mc.read(heigth)
 	if err != nil {
@@ -177,7 +177,7 @@ func (mc *mintCache) callHedgehog(serverUrl string) {
 			panic("error")
 		}
 
-		if h >= blockHeigth && strings.Contains(a, "unigrid1") {
+		if h >= blockHeigth && strings.Contains(a, "unigrid") {
 			mc.mints[h] = Mint{
 				address: a,
 				heigth:  heigth,
@@ -233,7 +233,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 		nSubsidy = nSubsidy * 99 / 100
 	}
 
-	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second() - prevCtx.BlockTime().Second()) / 60)
+	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second()-prevCtx.BlockTime().Second())/60)
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
