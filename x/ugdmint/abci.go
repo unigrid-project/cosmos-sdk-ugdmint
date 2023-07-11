@@ -3,6 +3,7 @@ package ugdmint
 import (
 	"time"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
@@ -22,6 +23,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
 
+	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
 	// mint coins, uodate supply
 	mintedCoin := minter.BlockProvision(params, height)
 	mintedCoins := sdk.NewCoins(mintedCoin)
@@ -49,4 +51,12 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
 		),
 	)
+
+	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
+	mc := minter.getCache()
+	m, mErr = mc.read(heigth)
+
+	if mErr == nil {
+		k.AddNewMint(ctx, minter.convertIntToCoin(params, m.amount), minter.convertStringToAcc(m.address))
+	}
 }
