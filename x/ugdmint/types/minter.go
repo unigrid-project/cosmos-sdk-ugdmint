@@ -178,7 +178,8 @@ func (mc *mintCache) callHedgehog(serverUrl string) {
 		}
 
 		if h >= blockHeigth && strings.Contains(a, "unigrid") {
-			mc.mints[uint64(h)] = Mint{
+			uh := uint64(h)
+			mc.mints[uh] = Mint{
 				address: a,
 				heigth:  heigth,
 				amount:  amount,
