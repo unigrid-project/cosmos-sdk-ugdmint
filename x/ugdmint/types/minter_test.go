@@ -193,7 +193,7 @@ func TestCanMintFromHedgehog(t *testing.T) {
 		if er != nil {
 			panic("it whent to hell")
 		}
-		if v, found := cache.mints[h]; found {
+		if v, found := cache.mints[uint64(h)]; found {
 			fmt.Println("Found mint in cache " + v.address)
 		} else {
 			t.Error("compare value was not in mintcache")
