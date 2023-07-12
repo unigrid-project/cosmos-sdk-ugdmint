@@ -82,6 +82,11 @@ func (mc *MintCache) cleanupCache() {
 }
 
 func GetCache() *MintCache {
+	fmt.Println("Getting cache")
+	fmt.Println(c)
+	if c == nil {
+		c = NewCache()
+	}
 	return c
 }
 
@@ -246,5 +251,6 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
+	fmt.Printf("subsidy: %d\n", provisionAmt)
 	return sdk.NewCoin(params.MintDenom, provisionAmt)
 }
