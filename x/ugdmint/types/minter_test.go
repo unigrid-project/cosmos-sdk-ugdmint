@@ -189,12 +189,12 @@ func TestCanMintFromHedgehog(t *testing.T) {
 
 	cache.callHedgehog(server.URL + "/gridspork/mint-storage")
 	for _, cv := range compareValue {
-		h, er := strconv.ParseInt(cv.heigth, 10, 64)
+		h, er := strconv.ParseInt(cv.Heigth, 10, 64)
 		if er != nil {
 			panic("it whent to hell")
 		}
 		if v, found := cache.mints[uint64(h)]; found {
-			fmt.Println("Found mint in cache " + v.address)
+			fmt.Println("Found mint in cache " + v.Address)
 		} else {
 			t.Error("compare value was not in mintcache")
 		}

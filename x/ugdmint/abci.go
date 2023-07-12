@@ -1,6 +1,7 @@
 package ugdmint
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -25,7 +26,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
 	// mint coins, uodate supply
-	mintedCoin := minter.BlockProvision(params, height)
+	mintedCoin := minter.BlockProvision(params, height, ctx, prevCtx)
 	mintedCoins := sdk.NewCoins(mintedCoin)
 
 	err := k.MintCoins(ctx, mintedCoins)
@@ -53,10 +54,16 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	)
 
 	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
-	mc := minter.getCache()
-	m, mErr = mc.read(heigth)
+	mc := types.GetCache()
+	m, mErr := mc.Read(height)
 
 	if mErr == nil {
-		k.AddNewMint(ctx, minter.convertIntToCoin(params, m.amount), minter.convertStringToAcc(m.address))
+		acc, aErr := types.ConvertStringToAcc(m.Address)
+		if aErr != nil {
+			fmt.Println("convert to account failed")
+			panic("error!!!!")
+		}
+		coins := types.ConvertIntToCoin(params, m.Amount)
+		k.AddNewMint(ctx, coins, acc)
 	}
 }

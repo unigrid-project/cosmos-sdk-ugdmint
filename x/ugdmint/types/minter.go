@@ -15,9 +15,9 @@ import (
 )
 
 type Mint struct {
-	address string
-	amount  int
-	heigth  string
+	Address string
+	Amount  int
+	Heigth  string
 }
 
 type Mints struct {
@@ -34,7 +34,7 @@ type HedgehogData struct {
 	Signature         string `json:"signature"`
 }
 
-type mintCache struct {
+type MintCache struct {
 	stop chan struct{}
 
 	wg    sync.WaitGroup
@@ -51,7 +51,7 @@ const (
 
 var c = NewCache()
 
-func (mc *mintCache) cleanupCache() {
+func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
 
@@ -75,12 +75,12 @@ func (mc *mintCache) cleanupCache() {
 	}
 }
 
-func getCache() *mintCache {
+func GetCache() *MintCache {
 	return c
 }
 
-func NewCache() *mintCache {
-	mc := &mintCache{
+func NewCache() *MintCache {
+	mc := &MintCache{
 		mints: make(map[uint64]Mint),
 		stop:  make(chan struct{}),
 	}
@@ -94,7 +94,7 @@ func NewCache() *mintCache {
 	return mc
 }
 
-func (mc *mintCache) read(heigth uint64) (Mint, error) {
+func (mc *MintCache) Read(heigth uint64) (Mint, error) {
 
 	mc.mu.RLock()
 	defer mc.mu.RUnlock()
@@ -106,20 +106,20 @@ func (mc *mintCache) read(heigth uint64) (Mint, error) {
 	return cm, nil
 }
 
-func (mc *mintCache) updateCache(heigth uint64, mint Mint) {
+func (mc *MintCache) updateCache(heigth uint64, mint Mint) {
 	mc.mints[heigth] = mint
 }
 
-func (mc *mintCache) deleteFromCache(heigth uint64) {
+func (mc *MintCache) deleteFromCache(heigth uint64) {
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 
 	delete(mc.mints, heigth)
 }
 
-func (mc *mintCache) checkCache(heigth uint64) (mint Mint) {
+func (mc *MintCache) checkCache(heigth uint64) (mint Mint) {
 
-	res, err := mc.read(heigth)
+	res, err := mc.Read(heigth)
 	if err != nil {
 		return res
 	}
@@ -128,15 +128,15 @@ func (mc *mintCache) checkCache(heigth uint64) (mint Mint) {
 
 }
 
-func convertIntToCoin(params Params, amount int) sdk.Coin {
-	return sdk.NewCoin(params.MintDenom, sdk.NewInt(int64(amount)))
+func ConvertIntToCoin(params Params, amount int) sdk.Coins {
+	return sdk.NewCoins(sdk.NewCoin(params.MintDenom, sdk.NewInt(int64(amount))))
 }
 
-func convertStringToAcc(address string) (sdk.AccAddress, error) {
+func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
 	return sdk.AccAddressFromBech32(address)
 }
 
-func (mc *mintCache) callHedgehog(serverUrl string) {
+func (mc *MintCache) callHedgehog(serverUrl string) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -180,9 +180,9 @@ func (mc *mintCache) callHedgehog(serverUrl string) {
 		if h >= blockHeigth && strings.Contains(a, "unigrid") {
 			uh := uint64(h)
 			mc.mints[uh] = Mint{
-				address: a,
-				heigth:  heigth,
-				amount:  amount,
+				Address: a,
+				Heigth:  heigth,
+				Amount:  amount,
 			}
 		}
 	}
