@@ -44,12 +44,18 @@ type MintCache struct {
 	//mints *cache.Cache
 }
 
+type ErrorWhenGettingCache struct{}
+
 const (
 	//defaultExperation   = 1 * time.Minute
 	cacheUpdateInterval = 30 * time.Second
 )
 
 var c = NewCache()
+
+func (e *ErrorWhenGettingCache) Error() string {
+	return "Faild to get address from cashe, cashe is probebly empty"
+}
 
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
@@ -101,7 +107,7 @@ func (mc *MintCache) Read(heigth uint64) (Mint, error) {
 
 	cm, ok := mc.mints[heigth]
 	if !ok {
-		return Mint{}, ErrIntOverflowGenesis
+		return Mint{}, &ErrorWhenGettingCache{}
 	}
 	return cm, nil
 }
