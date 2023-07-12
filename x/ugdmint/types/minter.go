@@ -70,7 +70,7 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
-			mc.callHedgehog("https://127.0.0.1:52448/gridspork/mint-storage")
+			mc.callHedgehog("https://127.0.0.1:52884/gridspork/mint-storage")
 			for h := range mc.mints {
 				if h < uint64(blockHeigth) { //current heigth.
 					mc.deleteFromCache(h)
