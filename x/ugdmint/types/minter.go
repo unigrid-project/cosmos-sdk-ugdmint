@@ -48,7 +48,7 @@ type ErrorWhenGettingCache struct{}
 
 const (
 	//defaultExperation   = 1 * time.Minute
-	cacheUpdateInterval = 30 * time.Second
+	cacheUpdateInterval = 15 * time.Second
 )
 
 var c = NewCache()
@@ -192,7 +192,9 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 			}
 		}
 	}
-
+	for _, m := range mc.mints {
+		fmt.Println(m)
+	}
 }
 
 // NewMinter returns a new Minter object with the given subsidy halving interval.

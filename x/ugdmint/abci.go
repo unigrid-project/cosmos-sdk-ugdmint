@@ -55,15 +55,19 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
 	mc := types.GetCache()
+	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
 
 	if mErr == nil {
+		fmt.Println("thier where no errors when checking heigth. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
 		if aErr != nil {
 			fmt.Println("convert to account failed")
 			panic("error!!!!")
 		}
 		coins := types.ConvertIntToCoin(params, m.Amount)
-		k.AddNewMint(ctx, coins, acc)
+		fmt.Println("time to mint")
+		mErr := k.AddNewMint(ctx, coins, acc)
+		fmt.Println(mErr.Error())
 	}
 }
