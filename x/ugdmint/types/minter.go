@@ -145,7 +145,8 @@ func ConvertIntToCoin(params Params, amount int) sdk.Coins {
 }
 
 func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
-	h := hex.EncodeToString([]byte(address))
+	s := strings.TrimPrefix(address, "unigrid")
+	h := hex.EncodeToString([]byte(s))
 	return sdk.AccAddressFromHexUnsafe(h)
 }
 
@@ -244,15 +245,15 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	height = height + 2500000
 
 	nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
-	fmt.Println("nBehalf: %d\n", nBehalf)
+	fmt.Printf("nBehalf: %d \n", nBehalf)
 	for i := 0; i < int(nBehalf); i++ {
 		nSubsidy = nSubsidy * 99 / 100
 	}
-	fmt.Println("nsubsidy: %d\n", nSubsidy)
+	fmt.Printf("nsubsidy: %f \n", nSubsidy)
 	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second()-prevCtx.BlockTime().Second())/60)
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
-	fmt.Printf("subsidy: %d\n", provisionAmt)
+	fmt.Printf("subsidy: %d \n", provisionAmt)
 	return sdk.NewCoin(params.MintDenom, provisionAmt)
 }
