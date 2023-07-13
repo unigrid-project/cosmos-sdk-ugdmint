@@ -16,20 +16,20 @@ func NewParams(
 	mintDenom string, subsidyHalvingInterval, goalBonded sdk.Dec, blocksPerYear uint64,
 ) Params {
 	return Params{
-		MintDenom: 				mintDenom,
+		MintDenom:              mintDenom,
 		SubsidyHalvingInterval: subsidyHalvingInterval,
-		GoalBonded:				goalBonded,
-		BlocksPerYear:			blocksPerYear,
+		GoalBonded:             goalBonded,
+		BlocksPerYear:          blocksPerYear,
 	}
 }
 
 // DefaultParams returns a default set of parameters
 func DefaultParams() Params {
 	return Params{
-		MintDenom:				sdk.DefaultBondDenom,
+		MintDenom:              "ugd",
 		SubsidyHalvingInterval: sdk.NewDecWithPrec(100000000, 2),
-		GoalBonded:				sdk.NewDecWithPrec(67, 2),
-		BlocksPerYear:			uint64(60 * 60 * 8766 / 5),
+		GoalBonded:             sdk.NewDecWithPrec(67, 2),
+		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
 	}
 }
 

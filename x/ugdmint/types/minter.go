@@ -2,6 +2,7 @@ package types
 
 import (
 	"crypto/tls"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -144,7 +145,8 @@ func ConvertIntToCoin(params Params, amount int) sdk.Coins {
 }
 
 func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
-	return sdk.AccAddressFromBech32(address)
+	h := hex.EncodeToString([]byte(address))
+	return sdk.AccAddressFromHexUnsafe(h)
 }
 
 func (mc *MintCache) callHedgehog(serverUrl string) {
@@ -242,11 +244,11 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	height = height + 2500000
 
 	nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
-
+	fmt.Println("nBehalf: %d\n", nBehalf)
 	for i := 0; i < int(nBehalf); i++ {
 		nSubsidy = nSubsidy * 99 / 100
 	}
-
+	fmt.Println("nsubsidy: %d\n", nSubsidy)
 	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second()-prevCtx.BlockTime().Second())/60)
 
 	provisionAmt := sdk.NewInt(int64(nSubsidy))
