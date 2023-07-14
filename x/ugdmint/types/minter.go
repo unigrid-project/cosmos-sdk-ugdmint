@@ -243,17 +243,22 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	var nSubsidy float64 = 1
 
 	height = height + 2500000
-
-	nBehalf := sdk.NewDec(int64(height - 100000)).Quo(params.SubsidyHalvingInterval).TruncateInt().Int64()
+	fmt.Println(params.SubsidyHalvingInterval.Abs().TruncateInt64())
+	nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
 	fmt.Printf("nBehalf: %d \n", nBehalf)
 	for i := 0; i < int(nBehalf); i++ {
-		nSubsidy = nSubsidy * 99 / 100
+		nSubsidy = nSubsidy * 99.0 / 100.0
 	}
-	fmt.Printf("nsubsidy: %f \n", nSubsidy)
-	nSubsidy = nSubsidy * float64((ctx.BlockTime().Second()-prevCtx.BlockTime().Second())/60)
 
-	provisionAmt := sdk.NewInt(int64(nSubsidy))
+	fmt.Printf("nsubsidy: %f \n", nSubsidy)
+	fmt.Println(ctx.BlockTime().Unix())
+	fmt.Println(prevCtx.BlockTime().Unix())
+	nSubsidy = nSubsidy * float64((ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix())/60.0)
+
+	//provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
-	fmt.Printf("subsidy: %d \n", provisionAmt)
-	return sdk.NewCoin(params.MintDenom, provisionAmt)
+	s := fmt.Sprintf("%f", nSubsidy)
+	fmt.Printf("subsidy: %d \n", s)
+	coin, _ := sdk.ParseDecCoin(s)
+	return coin.T
 }

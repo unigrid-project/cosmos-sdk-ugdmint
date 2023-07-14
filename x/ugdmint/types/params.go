@@ -27,7 +27,7 @@ func NewParams(
 func DefaultParams() Params {
 	return Params{
 		MintDenom:              "ugd",
-		SubsidyHalvingInterval: sdk.NewDecWithPrec(100000000, 2),
+		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
 		GoalBonded:             sdk.NewDecWithPrec(67, 2),
 		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
 	}
