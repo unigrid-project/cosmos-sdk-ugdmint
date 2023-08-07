@@ -258,7 +258,11 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	//provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
 	s := fmt.Sprintf("%f", nSubsidy)
-	fmt.Printf("subsidy: %d \n", s)
-	coin, _ := sdk.ParseDecCoin(s)
-	return coin.T
+	fmt.Printf("subsidy: %s \n", s)
+	deccoin, _ := sdk.ParseDecCoin(s)
+	coin, dCoin := deccoin.TruncateDecimal()
+	fmt.Println(coin)
+	fmt.Println(dCoin)
+
+	return coin
 }

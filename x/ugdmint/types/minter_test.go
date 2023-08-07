@@ -268,6 +268,8 @@ func TestAddressConvertion(t *testing.T) {
 	key := sdk.NewKVStoreKey(ModuleName)
 	testCtx := testutil.DefaultContextWithDB(t, key, sdk.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithBlockHeader(types.Header{ChainID: "unigrid", Time: time.Now()})
+	fmt.Println(ctx.BlockHeader().ChainID)
+	fmt.Println(ctx.BlockHeader())
 
 	ctrl := gomock.NewController(t)
 	acctKeeper := govtestutil.NewMockAccountKeeper(ctrl)
