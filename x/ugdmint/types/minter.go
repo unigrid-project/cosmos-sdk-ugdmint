@@ -253,7 +253,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	fmt.Printf("nsubsidy: %f \n", nSubsidy)
 	fmt.Println(ctx.BlockTime().Unix())
 	fmt.Println(prevCtx.BlockTime().Unix())
-	nSubsidy = nSubsidy * float64((ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix())/60.0)
+	nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
 
 	//provisionAmt := sdk.NewInt(int64(nSubsidy))
 	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
