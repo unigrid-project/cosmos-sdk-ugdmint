@@ -26,8 +26,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
 	// mint coins, uodate supply
-	mintedCoin := minter.BlockProvision(params, height, ctx, prevCtx)
-	mintedCoins := sdk.NewCoins(mintedCoin)
+	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
+	_, mintedCoin := mintedCoins.Find("ugd")
 
 	err := k.MintCoins(ctx, mintedCoins)
 	if err != nil {
@@ -49,7 +49,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			types.EventTypeUGDMint,
 			sdk.NewAttribute(types.AttributeKeyBondedRatio, bondedRatio.String()),
 			sdk.NewAttribute(types.AttributeKeySubsidyHalvingInterval, minter.SubsidyHalvingInterval.String()),
-			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
+			//sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
+			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoins.String()),
 		),
 	)
 
