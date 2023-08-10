@@ -145,7 +145,7 @@ func ConvertIntToCoin(params Params, amount int) sdk.Coins {
 }
 
 func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
-	sdk.GetConfig().SetBech32PrefixForAccount("unigrid", "unigrid")
+	//sdk.GetConfig().SetBech32PrefixForAccount("unigrid", "unigrid")
 	//s := strings.TrimPrefix(address, "unigrid")
 	return sdk.AccAddressFromBech32(address)
 }
