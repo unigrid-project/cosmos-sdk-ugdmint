@@ -27,8 +27,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
 	// mint coins, uodate supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
-	_, mintedCoin := mintedCoins.Find("ugd")
+	ok, mintedCoin := mintedCoins.Find("ugd")
 
+	if !ok {
+		_, mintedCoin = mintedCoins.Find("fermi")
+	}
 	err := k.MintCoins(ctx, mintedCoins)
 	if err != nil {
 		panic(err)
