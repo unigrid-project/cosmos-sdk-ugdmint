@@ -2,10 +2,10 @@ package types
 
 import (
 	"crypto/tls"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -145,9 +145,9 @@ func ConvertIntToCoin(params Params, amount int) sdk.Coins {
 }
 
 func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
-	s := strings.TrimPrefix(address, "unigrid")
-	h := hex.EncodeToString([]byte(s))
-	return sdk.AccAddressFromHexUnsafe(h)
+	sdk.GetConfig().SetBech32PrefixForAccount("unigrid", "unigrid")
+	//s := strings.TrimPrefix(address, "unigrid")
+	return sdk.AccAddressFromBech32(address)
 }
 
 func (mc *MintCache) callHedgehog(serverUrl string) {
@@ -238,7 +238,7 @@ func ValidateMinter(minter Minter) error {
 
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
-func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coin {
+func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coins {
 
 	var nSubsidy float64 = 1
 
@@ -255,14 +255,25 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	fmt.Println(prevCtx.BlockTime().Unix())
 	nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
 
-	//provisionAmt := sdk.NewInt(int64(nSubsidy))
-	// provisionAmt := m.AnnualProvisions.QuoInt(sdk.NewInt(int64(params.BlocksPerYear)))
 	s := fmt.Sprintf("%f", nSubsidy)
 	fmt.Printf("subsidy: %s \n", s)
-	deccoin, _ := sdk.ParseDecCoin(s)
-	coin, dCoin := deccoin.TruncateDecimal()
-	fmt.Println(coin)
-	fmt.Println(dCoin)
 
-	return coin
+	//Convertion from decimal to ugd and fermi. ugd is 10^8 and fermi is exponent 0.
+	lDec, _ := sdk.NewDecFromStr(s)
+	fmt.Println(lDec)
+	deccoin := sdk.NewDecCoinFromDec("ugd", lDec)
+	ugd, dcoin := deccoin.TruncateDecimal()
+	fmt.Println(dcoin.Amount)
+	d := dcoin.Amount.MulInt64(int64(math.Pow10(8)))
+	dString := fmt.Sprintf("%dfermi", d)
+	fmt.Println("d")
+	fmt.Println(d)
+	fermi, _ := sdk.ParseCoinNormalized(dString)
+
+	fmt.Println(ugd.Amount)
+	fmt.Println(fermi.Amount)
+
+	coins := sdk.NewCoins(ugd, fermi)
+
+	return coins
 }

@@ -25,6 +25,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+
+	//"github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtestutil "github.com/cosmos/cosmos-sdk/x/gov/testutil"
 	"github.com/golang/mock/gomock"
 )
@@ -251,9 +253,17 @@ func TestBlockProvision(t *testing.T) {
 
 	minter := NewMinter(params.SubsidyHalvingInterval)
 
-	coin := Minter.BlockProvision(minter, params, 10, ctx, prevCtx)
+	coins := Minter.BlockProvision(minter, params, 10, ctx, prevCtx)
 
-	fmt.Println(coin)
+	fmt.Println(coins.AmountOf("ugd"))
+	fmt.Println(coins.AmountOf("fermi"))
+
+	if !coins.AmountOf("fermi").IsZero() {
+		fmt.Println("passed")
+	} else {
+		t.Error("faild amount 0")
+	}
+
 }
 
 func TestAddressConvertion(t *testing.T) {
@@ -275,7 +285,6 @@ func TestAddressConvertion(t *testing.T) {
 	acctKeeper := govtestutil.NewMockAccountKeeper(ctrl)
 	//bankKeeper := govtestutil.NewMockBankKeeper(ctrl)
 	stakingKeeper := govtestutil.NewMockStakingKeeper(ctrl)
-
 	acctKeeper.EXPECT().GetModuleAddress(ModuleName).Return(mintAcct).AnyTimes()
 	acctKeeper.EXPECT().GetModuleAccount(gomock.Any(), ModuleName).Return(authtypes.NewEmptyModuleAccount(ModuleName)).AnyTimes()
 	//trackMockBalances(bankKeeper)
@@ -287,12 +296,17 @@ func TestAddressConvertion(t *testing.T) {
 	stakingKeeper.EXPECT().IterateDelegations(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(sdkmath.NewInt(10000000)).AnyTimes()
 
-	add, _ := ConvertStringToAcc(compareValue[0].Address)
+	add, err := ConvertStringToAcc(compareValue[0].Address)
 
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(add.String())
 	if compareValue[0].Address == add.String() {
 		fmt.Println("test passed")
 	} else {
 		t.Error("address convertion failed")
 	}
+	//unigrid1x9cxkvnn0p58y7thd4u8xut5deshxvmsxanh2vr58purgvmgd3m8jdr2v968xect00gs9
+	//cosmos1x9cxkvnn0p58y7thd4u8xut5deshxvmsxanh2vr58purgvmgd3m8jdr2v968xecqaqucu
 }
