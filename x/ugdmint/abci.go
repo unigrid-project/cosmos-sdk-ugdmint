@@ -24,10 +24,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
 	var prevCtx sdk.Context
-	if ctx.BlockHeader().Height == 1 {
-		prevCtx = ctx
-	} else {
+	if ctx.BlockHeader().Height != 1 {
 		prevCtx = sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
+	} else {
+		fmt.Println("SHould only happen on the first block!!!!!!!")
+		prevCtx = ctx
 	}
 
 	// mint coins, uodate supply
