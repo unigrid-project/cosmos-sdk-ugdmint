@@ -25,6 +25,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	k.SetMinter(ctx, minter)
 	var prevCtx sdk.Context
 	if ctx.BlockHeader().Height != 1 {
+		//prevCtx.
 		prevCtx = sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
 	} else {
 		prevCtx = ctx
