@@ -267,6 +267,53 @@ func TestBlockProvision(t *testing.T) {
 
 }
 
+func TestFirstBlockProvision(t *testing.T) {
+
+	key := sdk.NewKVStoreKey(ModuleName)
+	testCtx := testutil.DefaultContextWithDB(t, key, sdk.NewTransientStoreKey("transient_test"))
+	ctx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now()})
+
+	prevCtx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now()})
+
+	ctrl := gomock.NewController(t)
+	acctKeeper := govtestutil.NewMockAccountKeeper(ctrl)
+	//bankKeeper := govtestutil.NewMockBankKeeper(ctrl)
+	stakingKeeper := govtestutil.NewMockStakingKeeper(ctrl)
+
+	acctKeeper.EXPECT().GetModuleAddress(ModuleName).Return(mintAcct).AnyTimes()
+	acctKeeper.EXPECT().GetModuleAccount(gomock.Any(), ModuleName).Return(authtypes.NewEmptyModuleAccount(ModuleName)).AnyTimes()
+	//trackMockBalances(bankKeeper)
+	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) sdkmath.Int {
+		return sdk.TokensFromConsensusPower(power, sdkmath.NewIntFromUint64(1000000))
+	}).AnyTimes()
+	stakingKeeper.EXPECT().BondDenom(ctx).Return("ugd").AnyTimes()
+	stakingKeeper.EXPECT().IterateBondedValidatorsByPower(gomock.Any(), gomock.Any()).AnyTimes()
+	stakingKeeper.EXPECT().IterateDelegations(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(sdkmath.NewInt(10000000)).AnyTimes()
+
+	params := Params{
+		MintDenom:              "ugd",
+		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
+		GoalBonded:             sdk.NewDecWithPrec(67, 2),
+		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
+	}
+
+	minter := NewMinter(params.SubsidyHalvingInterval)
+
+	coins := Minter.BlockProvision(minter, params, 10, ctx, prevCtx)
+
+	fmt.Println(coins.AmountOf("ugd"))
+	fmt.Println(coins.AmountOf("fermi"))
+
+	fmt.Println(coins.String())
+	if !coins.AmountOf("fermi").IsZero() {
+		fmt.Println("passed")
+	} else {
+		t.Error("faild amount 0")
+	}
+
+}
+
 func TestAddressConvertion(t *testing.T) {
 
 	compareValue := []Mint{{"unigrid1pk2sxhrywmxsqtnas3p7gu0t8x43hlvy4jatsg", 100, "80"},

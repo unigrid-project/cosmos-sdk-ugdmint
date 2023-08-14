@@ -253,7 +253,11 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	fmt.Printf("nsubsidy: %f \n", nSubsidy)
 	fmt.Println(ctx.BlockTime().Unix())
 	fmt.Println(prevCtx.BlockTime().Unix())
-	nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
+	if ctx.BlockTime().Unix() == prevCtx.BlockTime().Unix() {
+		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
+	} else {
+		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
+	}
 
 	s := fmt.Sprintf("%f", nSubsidy)
 	fmt.Printf("subsidy: %s \n", s)
