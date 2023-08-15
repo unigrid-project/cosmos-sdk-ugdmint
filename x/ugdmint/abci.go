@@ -84,7 +84,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		coins := types.ConvertIntToCoin(params, m.Amount)
 		fmt.Println("time to mint")
 		k.MintCoins(ctx, coins)
-		fmt.Println("Coins are minted")
+		fmt.Printf("Coins are minted to address = %s\n", acc.String())
 		mErr := k.AddNewMint(ctx, coins, acc)
 		fmt.Println(mErr.Error())
 		fmt.Println("Coins have been minted")
