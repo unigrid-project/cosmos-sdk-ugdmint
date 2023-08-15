@@ -11,6 +11,10 @@ import (
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
+var (
+	prevBlockTime = time.Now()
+)
+
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
@@ -26,7 +30,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	//var prevCtx sdk.Context
 	//if ctx.BlockHeader().Height != 1 {
 	//prevCtx.
-	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(int64(height - 1))
+	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
+	prevBlockTime = ctx.BlockTime()
 	//} else {
 	//prevCtx = ctx
 	//}
