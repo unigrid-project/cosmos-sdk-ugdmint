@@ -76,6 +76,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	if mErr == nil {
 		fmt.Println("thier where no errors when checking heigth. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
+
 		if aErr != nil {
 			fmt.Println("convert to account failed")
 			panic("error!!!!")
@@ -83,7 +84,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		coins := types.ConvertIntToCoin(params, m.Amount)
 		fmt.Println("time to mint")
 		k.MintCoins(ctx, coins)
+		fmt.Println("Coins are minted")
 		mErr := k.AddNewMint(ctx, coins, acc)
 		fmt.Println(mErr.Error())
+		fmt.Println("Coins have been minted")
 	}
 }

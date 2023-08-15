@@ -265,7 +265,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	s := fmt.Sprintf("%f", nSubsidy)
 	fmt.Printf("subsidy: %s \n", s)
-
+	//unigrid1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8g6xaxu
 	//Convertion from decimal to ugd and fermi. ugd is 10^8 and fermi is exponent 0.
 	lDec, _ := sdk.NewDecFromStr(s)
 	fmt.Println(lDec)
