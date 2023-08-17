@@ -210,7 +210,7 @@ Example:
 blocks_per_year: "4360000"
 goal_bonded: "0.670000000000000000"
 subsidy_halving_interval: "1000000.000000000000000000"
-mint_denom: stake
+mint_denom: ugd
 ```
 
 ### gRPC
@@ -258,7 +258,7 @@ Example Output:
 ```json
 {
   "params": {
-    "mintDenom": "stake",
+    "mintDenom": "ugd",
     "subsidyHalvingInterval": "1000000.00000000000",
     "goalBonded": "0.670000000000000000",
     "blocksPerYear": "6311520"
@@ -307,7 +307,7 @@ Example Output:
 ```json
 {
   "params": {
-    "mintDenom": "stake",
+    "mintDenom": "ugd",
     "subsidyHalvingInterval": "1000000.00000000000",
     "goalBonded": "0.670000000000000000",
     "blocksPerYear": "6311520"

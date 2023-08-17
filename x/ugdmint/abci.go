@@ -86,7 +86,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		k.MintCoins(ctx, coins)
 		fmt.Printf("Coins are minted to address = %s\n", acc.String())
 		mErr := k.AddNewMint(ctx, coins, acc)
-		fmt.Println(mErr.Error())
+		if mErr != nil{
+			fmt.Println(mErr.Error())
+		}
 		fmt.Println("Coins have been minted")
 	}
 }
