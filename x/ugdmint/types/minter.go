@@ -52,7 +52,10 @@ const (
 	cacheUpdateInterval = 15 * time.Second
 )
 
-var c = NewCache()
+var (
+	c          = NewCache()
+	currHeigth = uint64(1)
+)
 
 func (e *ErrorWhenGettingCache) Error() string {
 	return "Faild to get address from cashe, cashe is probebly empty"
@@ -61,8 +64,6 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-
-	blockHeigth := sdk.Context.BlockHeight(sdk.Context{})
 
 	for {
 		select {
@@ -73,7 +74,7 @@ func (mc *MintCache) cleanupCache() {
 			//update cache with new etries if any are found
 			mc.callHedgehog("https://127.0.0.1:52884/gridspork/mint-storage")
 			for h := range mc.mints {
-				if h < uint64(blockHeigth) { //current heigth.
+				if h > currHeigth { //current heigth.
 					mc.deleteFromCache(h)
 				}
 			}
@@ -242,6 +243,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	var nSubsidy float64 = 1
 
+	currHeigth = height
 	height = height + 2500000
 	fmt.Println(params.SubsidyHalvingInterval.Abs().TruncateInt64())
 	nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
