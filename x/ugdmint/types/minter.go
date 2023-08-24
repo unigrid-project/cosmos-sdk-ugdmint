@@ -265,7 +265,9 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 		nSubsidy = 0
 	}
 
-	s := fmt.Sprintf("%f", nSubsidy)
+	coin := sdk.NewCoin(params.MintDenom, sdk.NewIntFromUint64(uint64(nSubsidy*math.Pow10(8))))
+
+	/*s := fmt.Sprintf("%f", nSubsidy)
 	fmt.Printf("subsidy: %s \n", s)
 	//unigrid1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8g6xaxu
 	//Convertion from decimal to ugd and fermi. ugd is 10^8 and fermi is exponent 0.
@@ -283,7 +285,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	fmt.Println(ugd.Amount)
 	fmt.Println(fermi.Amount)
 
-	coins := sdk.NewCoins(ugd, fermi)
+	coins := sdk.NewCoins(ugd, fermi) */
 
-	return coins
+	return sdk.NewCoins(coin)
 }

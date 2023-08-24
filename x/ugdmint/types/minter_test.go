@@ -259,7 +259,7 @@ func TestBlockProvision(t *testing.T) {
 	fmt.Println(coins.AmountOf("fermi"))
 
 	fmt.Println(coins.String())
-	if !coins.AmountOf("fermi").IsZero() {
+	if !coins.AmountOf("ugd").IsZero() {
 		fmt.Println("passed")
 	} else {
 		t.Error("faild amount 0")
