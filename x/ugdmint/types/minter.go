@@ -74,7 +74,7 @@ func (mc *MintCache) cleanupCache() {
 			//update cache with new etries if any are found
 			mc.callHedgehog("https://127.0.0.1:52884/gridspork/mint-storage")
 			for h := range mc.mints {
-				if h > currHeigth { //current heigth.
+				if h < currHeigth { //current heigth.
 					mc.deleteFromCache(h)
 				}
 			}
