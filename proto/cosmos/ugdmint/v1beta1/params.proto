@@ -38,4 +38,6 @@ message Params {
   ];
   // expected blocks per year
   uint64 blocks_per_year = 4;
+  // Hedgehog address
+  string hedgehog_address = 5;
 }
