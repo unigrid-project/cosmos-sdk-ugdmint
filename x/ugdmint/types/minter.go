@@ -164,6 +164,13 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 		panic("where is hedgehog " + err.Error())
 	}
 	defer response.Body.Close()
+
+	// Check if the response is empty
+	if response.ContentLength == 0 {
+		fmt.Println("Received empty response from hedgehog server.")
+		return
+	}
+
 	var res HedgehogData
 	body, err1 := io.ReadAll(response.Body)
 
