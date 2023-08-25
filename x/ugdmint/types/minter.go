@@ -73,11 +73,11 @@ func (mc *MintCache) cleanupCache() {
 			mc.mu.Lock()
 			//update cache with new etries if any are found
 			mc.callHedgehog("https://127.0.0.1:52884/gridspork/mint-storage")
-			for h := range mc.mints {
+			/*for h := range mc.mints {
 				if h < currHeigth { //current heigth.
 					mc.deleteFromCache(h)
 				}
-			}
+			}*/
 			mc.mu.Unlock()
 		}
 	}
