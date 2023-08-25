@@ -65,7 +65,7 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-	hedgehogUrl := viper.GetString("hedgehog_url")
+	hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
 	for {
 		select {
 		case <-mc.stop:
