@@ -65,9 +65,6 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-	fmt.Println("hedgehog.hedgehog_url:", viper.GetString("hedgehog.hedgehog_url"))
-	hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
-	fmt.Println("hedgehogUrl:", hedgehogUrl)
 	for {
 		select {
 		case <-mc.stop:
@@ -75,6 +72,9 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
+			fmt.Println("hedgehog.hedgehog_url:", viper.GetString("hedgehog.hedgehog_url"))
+			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+			fmt.Println("hedgehogUrl:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 			/*for h := range mc.mints {
 				if h < currHeigth { //current heigth.
