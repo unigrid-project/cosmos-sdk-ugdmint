@@ -17,7 +17,6 @@ var (
 
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
-	fmt.Println("BeginBlock ugd mint abci.go")
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
