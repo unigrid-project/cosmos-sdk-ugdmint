@@ -13,6 +13,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/spf13/viper"
 )
 
 type Mint struct {
@@ -64,7 +65,7 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-
+	hedgehogUrl := viper.GetString("hedgehog_url")
 	for {
 		select {
 		case <-mc.stop:
@@ -72,7 +73,7 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
-			mc.callHedgehog("https://127.0.0.1:52884/gridspork/mint-storage")
+			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 			/*for h := range mc.mints {
 				if h < currHeigth { //current heigth.
 					mc.deleteFromCache(h)
