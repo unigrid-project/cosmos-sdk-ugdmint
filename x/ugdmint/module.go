@@ -172,6 +172,7 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	fmt.Println("BeginBlock ugd mint")
 	BeginBlocker(ctx, am.keeper)
 }
 
