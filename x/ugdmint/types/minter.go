@@ -161,8 +161,14 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 	response, err := client.Get(serverUrl)
 
 	if err != nil {
-		panic("where is hedgehog " + err.Error())
+		if err == io.EOF {
+			fmt.Println("Received empty response from hedgehog server.")
+		} else {
+			fmt.Println("Error accessing hedgehog:", err.Error())
+		}
+		return
 	}
+
 	defer response.Body.Close()
 
 	// Check if the response is empty
@@ -198,7 +204,8 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 		h, er := strconv.ParseInt(heigth, 10, 64)
 
 		if er != nil {
-			panic("error")
+			fmt.Println("Error parsing height:", er.Error())
+			continue // Skip this iteration and move to the next one
 		}
 
 		if h >= blockHeigth && strings.Contains(a, "unigrid") {
