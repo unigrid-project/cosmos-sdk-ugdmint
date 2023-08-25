@@ -13,14 +13,13 @@ import (
 
 // NewParams creates a new Params instance
 func NewParams(
-	mintDenom string, subsidyHalvingInterval, goalBonded sdk.Dec, blocksPerYear uint64, hedgehogAddress string,
+	mintDenom string, subsidyHalvingInterval, goalBonded sdk.Dec, blocksPerYear uint64,
 ) Params {
 	return Params{
 		MintDenom:              mintDenom,
 		SubsidyHalvingInterval: subsidyHalvingInterval,
 		GoalBonded:             goalBonded,
 		BlocksPerYear:          blocksPerYear,
-		HedgehogAddress:		hedgehogAddress,
 	}
 }
 
@@ -31,7 +30,6 @@ func DefaultParams() Params {
 		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
 		GoalBonded:             sdk.NewDecWithPrec(67, 2),
 		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
-		HedgehogAddress:		"",
 	}
 }
 

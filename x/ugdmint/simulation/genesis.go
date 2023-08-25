@@ -15,8 +15,8 @@ import (
 
 // Simulation parameter constants
 const (
-	SubsidyHalvingInterval  = "subsidy_halving_interval"
-	GoalBonded          	= "goal_bonded"
+	SubsidyHalvingInterval = "subsidy_halving_interval"
+	GoalBonded             = "goal_bonded"
 )
 
 // GenSubsidyHalvingInterval randomized subsidy halving interval
@@ -47,7 +47,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	mintDenom := sdk.DefaultBondDenom
 	blocksPerYear := uint64(60 * 60 * 8766 / 5)
-	params := types.NewParams(mintDenom, subsidyHalvingInterval, goalBonded, blocksPerYear, "")
+	params := types.NewParams(mintDenom, subsidyHalvingInterval, goalBonded, blocksPerYear)
 
 	mintGenesis := types.NewGenesisState(types.InitialMinter(subsidyHalvingInterval), params)
 
