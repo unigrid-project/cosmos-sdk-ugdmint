@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
@@ -17,7 +17,7 @@ var (
 )
 
 // BeginBlocker mints new tokens for the previous block.
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestBeginBlock) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
@@ -32,8 +32,15 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
 	prevBlockTime = ctx.BlockTime()
 
-	consensusReactor := tendermint.ConsensusReactor()
-	catchingUp := consensusReactor.WaitSync()
+	// Get the latest committed block height
+	latestBlockHeight := ctx.BlockHeight()
+
+	// Get the current block height
+	currentBlockHeight := req.Header.Height
+
+	// Check if the node is catching up
+	catchingUp := currentBlockHeight > latestBlockHeight+1
+
 	if catchingUp {
 		fmt.Println("Node is syncing. Skipping the minting process.")
 		return
