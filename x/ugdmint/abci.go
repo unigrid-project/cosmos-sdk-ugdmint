@@ -41,10 +41,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
 	prevBlockTime = ctx.BlockTime()
 
-	if isNodeSyncing() {
-		fmt.Println("Node is syncing. Skipping the minting process.")
-		return
-	}
 	// mint coins, update supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
 	ok, mintedCoin := mintedCoins.Find("ugd")
@@ -82,6 +78,10 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
 
+	if isNodeSyncing() {
+		fmt.Println("Node is syncing. Skipping the minting process.")
+		return
+	}
 	if mErr == nil {
 		fmt.Println("There were no errors when checking height. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
