@@ -7,6 +7,7 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	tendermint "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
@@ -27,16 +28,17 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
-	//var prevCtx sdk.Context
-	//if ctx.BlockHeader().Height != 1 {
-	//prevCtx.
+
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
 	prevBlockTime = ctx.BlockTime()
-	//} else {
-	//prevCtx = ctx
-	//}
 
-	// mint coins, uodate supply
+	consensusReactor := tendermint.ConsensusReactor()
+	catchingUp := consensusReactor.WaitSync()
+	if catchingUp {
+		fmt.Println("Node is syncing. Skipping the minting process.")
+		return
+	}
+	// mint coins, update supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
 	ok, mintedCoin := mintedCoins.Find("ugd")
 
@@ -74,7 +76,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	m, mErr := mc.Read(height)
 
 	if mErr == nil {
-		fmt.Println("thier where no errors when checking heigth. its time to mint to address!!")
+		fmt.Println("There were no errors when checking height. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
 
 		if aErr != nil {
