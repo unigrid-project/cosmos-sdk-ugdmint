@@ -27,6 +27,10 @@ type StatusResponse struct {
 
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+	if isNodeSyncing() {
+		fmt.Println("Node is syncing. Skipping the minting process.")
+		return
+	}
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
@@ -78,10 +82,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
 
-	if isNodeSyncing() {
-		fmt.Println("Node is syncing. Skipping the minting process.")
-		return
-	}
 	if mErr == nil {
 		fmt.Println("There were no errors when checking height. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
