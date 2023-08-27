@@ -1,10 +1,11 @@
 package ugdmint
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -16,8 +17,16 @@ var (
 	prevBlockTime = time.Now()
 )
 
+type StatusResponse struct {
+	Result struct {
+		SyncInfo struct {
+			CatchingUp bool `json:"catching_up"`
+		} `json:"sync_info"`
+	} `json:"result"`
+}
+
 // BeginBlocker mints new tokens for the previous block.
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestBeginBlock) {
+func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
@@ -32,16 +41,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestBeginBlock) 
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
 	prevBlockTime = ctx.BlockTime()
 
-	// Get the latest committed block height
-	latestBlockHeight := ctx.BlockHeight()
-
-	// Get the current block height
-	currentBlockHeight := req.Header.Height
-
-	// Check if the node is catching up
-	catchingUp := currentBlockHeight > latestBlockHeight+1
-
-	if catchingUp {
+	if isNodeSyncing() {
 		fmt.Println("Node is syncing. Skipping the minting process.")
 		return
 	}
@@ -100,4 +100,23 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, req abci.RequestBeginBlock) 
 		}
 		fmt.Println("Coins have been minted")
 	}
+}
+
+func isNodeSyncing() bool {
+	resp, err := http.Get("http://localhost:26657/status")
+	if err != nil {
+		// Handle error or return true to be safe
+		return true
+	}
+	defer resp.Body.Close()
+
+	var statusResponse StatusResponse
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&statusResponse)
+	if err != nil {
+		// Handle error or return true to be safe
+		return true
+	}
+
+	return statusResponse.Result.SyncInfo.CatchingUp
 }
