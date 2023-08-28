@@ -39,9 +39,10 @@ type HedgehogData struct {
 type MintCache struct {
 	stop chan struct{}
 
-	wg    sync.WaitGroup
-	mu    sync.RWMutex
-	mints map[uint64]Mint
+	wg      sync.WaitGroup
+	mu      sync.RWMutex
+	mints   map[uint64]Mint
+	notInit int64
 
 	//mints *cache.Cache
 }
@@ -95,16 +96,18 @@ func (mc *MintCache) cleanupCache() {
 func GetCache() *MintCache {
 	fmt.Println("Getting cache")
 	fmt.Println(c)
-	if c.mu == (sync.RWMutex{}) {
-		return NewCache()
+	if c.notInit == 0 {
+		fmt.Println("Making a new Chache!!!!!!!!!!!")
+		c = NewCache()
 	}
 	return c
 }
 
 func NewCache() *MintCache {
 	mc := &MintCache{
-		mints: make(map[uint64]Mint),
-		stop:  make(chan struct{}),
+		mints:   make(map[uint64]Mint),
+		stop:    make(chan struct{}),
+		notInit: 1,
 	}
 
 	mc.wg.Add(1)
