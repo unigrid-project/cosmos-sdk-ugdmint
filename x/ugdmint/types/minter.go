@@ -56,6 +56,7 @@ const (
 var (
 	c          = NewCache()
 	currHeigth = uint64(1)
+	first      = true
 )
 
 func (e *ErrorWhenGettingCache) Error() string {
@@ -65,6 +66,12 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
+	if first {
+		hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+		fmt.Println("hedgehogUrl in ugdmint:", hedgehogUrl)
+		mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
+		first = false
+	}
 	for {
 		select {
 		case <-mc.stop:
@@ -75,11 +82,11 @@ func (mc *MintCache) cleanupCache() {
 			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
 			fmt.Println("hedgehogUrl in ugdmint:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
-			for h := range mc.mints {
+			/*for h := range mc.mints {
 				if h < currHeigth { //current heigth.
 					mc.deleteFromCache(h)
 				}
-			}
+			}*/
 			mc.mu.Unlock()
 		}
 	}
