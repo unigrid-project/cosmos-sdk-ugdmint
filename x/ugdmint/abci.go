@@ -1,7 +1,9 @@
 package ugdmint
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -15,6 +17,14 @@ var (
 	prevBlockTime = time.Now()
 )
 
+type StatusResponse struct {
+	Result struct {
+		SyncInfo struct {
+			CatchingUp bool `json:"catching_up"`
+		} `json:"sync_info"`
+	} `json:"result"`
+}
+
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
@@ -27,16 +37,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
-	//var prevCtx sdk.Context
-	//if ctx.BlockHeader().Height != 1 {
-	//prevCtx.
+
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
 	prevBlockTime = ctx.BlockTime()
-	//} else {
-	//prevCtx = ctx
-	//}
 
-	// mint coins, uodate supply
+	// mint coins, update supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
 	ok, mintedCoin := mintedCoins.Find("ugd")
 
@@ -72,23 +77,45 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	mc := types.GetCache()
 	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
+	if isNodeSyncing() {
+		fmt.Println("Node is syncing. Skipping the minting process.")
+	} else {
+		if mErr == nil {
+			fmt.Println("There were no errors when checking height. its time to mint to address!!")
+			acc, aErr := types.ConvertStringToAcc(m.Address)
 
-	if mErr == nil {
-		fmt.Println("thier where no errors when checking heigth. its time to mint to address!!")
-		acc, aErr := types.ConvertStringToAcc(m.Address)
-
-		if aErr != nil {
-			fmt.Println("convert to account failed")
-			panic("error!!!!")
+			if aErr != nil {
+				fmt.Println("convert to account failed")
+				panic("error!!!!")
+			}
+			coins := types.ConvertIntToCoin(params, m.Amount)
+			fmt.Println("time to mint")
+			k.MintCoins(ctx, coins)
+			fmt.Printf("Coins are minted to address = %s\n", acc.String())
+			mErr := k.AddNewMint(ctx, coins, acc)
+			if mErr != nil {
+				fmt.Println(mErr.Error())
+			}
+			fmt.Println("Coins have been minted")
 		}
-		coins := types.ConvertIntToCoin(params, m.Amount)
-		fmt.Println("time to mint")
-		k.MintCoins(ctx, coins)
-		fmt.Printf("Coins are minted to address = %s\n", acc.String())
-		mErr := k.AddNewMint(ctx, coins, acc)
-		if mErr != nil {
-			fmt.Println(mErr.Error())
-		}
-		fmt.Println("Coins have been minted")
 	}
+}
+
+func isNodeSyncing() bool {
+	resp, err := http.Get("http://localhost:26657/status")
+	if err != nil {
+		// Handle error or return true to be safe
+		return true
+	}
+	defer resp.Body.Close()
+
+	var statusResponse StatusResponse
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&statusResponse)
+	if err != nil {
+		// Handle error or return true to be safe
+		return true
+	}
+
+	return statusResponse.Result.SyncInfo.CatchingUp
 }

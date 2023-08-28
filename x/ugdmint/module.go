@@ -9,8 +9,8 @@ import (
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
-	modulev1 "github.com/unigrid-project/cosmos-sdk-ugdmint/api/cosmos/ugdmint/module/v1"
 	"cosmossdk.io/core/appmodule"
+	modulev1 "github.com/unigrid-project/cosmos-sdk-ugdmint/api/cosmos/ugdmint/module/v1"
 
 	"cosmossdk.io/depinject"
 
@@ -35,7 +35,7 @@ const ConsensusVersion = 1
 
 var (
 	_ module.BeginBlockAppModule = AppModule{}
-	_ module.AppModuleBasic 	 = AppModuleBasic{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
 
@@ -120,10 +120,10 @@ func NewAppModule(
 	ss exported.Subspace,
 ) AppModule {
 	return AppModule{
-		AppModuleBasic:      AppModuleBasic{cdc: cdc},
-		keeper:              keeper,
-		authKeeper:          ak,
-		legacySubspace:      ss,
+		AppModuleBasic: AppModuleBasic{cdc: cdc},
+		keeper:         keeper,
+		authKeeper:     ak,
+		legacySubspace: ss,
 	}
 }
 
@@ -260,5 +260,3 @@ func ProvideModule(in MintInputs) MintOutputs {
 
 	return MintOutputs{MintKeeper: k, Module: m}
 }
-
-

@@ -54,7 +54,7 @@ const (
 )
 
 var (
-	c          = &MintCache{}
+	c          = NewCache()
 	currHeigth = uint64(1)
 )
 
@@ -65,7 +65,6 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-	hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
 	for {
 		select {
 		case <-mc.stop:
@@ -73,6 +72,8 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			//update cache with new etries if any are found
+			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+			fmt.Println("hedgehogUrl in ugdmint:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 			for h := range mc.mints {
 				if h < currHeigth { //current heigth.
@@ -160,9 +161,22 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 	response, err := client.Get(serverUrl)
 
 	if err != nil {
-		panic("where is hedgehog " + err.Error())
+		if err == io.EOF {
+			fmt.Println("Received empty response from hedgehog server.")
+		} else {
+			fmt.Println("Error accessing hedgehog:", err.Error())
+		}
+		return
 	}
+
 	defer response.Body.Close()
+
+	// Check if the response is empty
+	if response.ContentLength == 0 {
+		fmt.Println("Received empty response from hedgehog server.")
+		return
+	}
+
 	var res HedgehogData
 	body, err1 := io.ReadAll(response.Body)
 
@@ -190,7 +204,8 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 		h, er := strconv.ParseInt(heigth, 10, 64)
 
 		if er != nil {
-			panic("error")
+			fmt.Println("Error parsing height:", er.Error())
+			continue // Skip this iteration and move to the next one
 		}
 
 		if h >= blockHeigth && strings.Contains(a, "unigrid") {

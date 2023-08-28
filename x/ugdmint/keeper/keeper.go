@@ -6,7 +6,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
@@ -17,6 +16,7 @@ type (
 		stakingKeeper    types.StakingKeeper
 		bankKeeper       types.BankKeeper
 		feeCollectorName string
+		hedgehogUrl      string
 
 		// the address capable of executing a MsgUpdateParams message. Typically, this
 		// should be the x/gov module account.
@@ -46,6 +46,16 @@ func NewKeeper(
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
 	}
+}
+
+// SetHedgehogUrl sets the module's hedgehog url.
+func (k *Keeper) SetHedgehogUrl(url string) {
+	k.hedgehogUrl = url
+}
+
+// GetHedgehogUrl returns the module's hedgehog url.
+func (k *Keeper) GetHedgehogUrl() string {
+	return k.hedgehogUrl
 }
 
 // GetAuthority returns the x/mint module's authority.
