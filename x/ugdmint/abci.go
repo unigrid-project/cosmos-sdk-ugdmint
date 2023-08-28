@@ -77,28 +77,28 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	mc := types.GetCache()
 	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
-	if isNodeSyncing() {
-		fmt.Println("Node is syncing. Skipping the minting process.")
-	} else {
-		if mErr == nil {
-			fmt.Println("There were no errors when checking height. its time to mint to address!!")
-			acc, aErr := types.ConvertStringToAcc(m.Address)
+	//if isNodeSyncing() {
+	//	fmt.Println("Node is syncing. Skipping the minting process.")
+	//} else {
+	if mErr == nil {
+		fmt.Println("There were no errors when checking height. its time to mint to address!!")
+		acc, aErr := types.ConvertStringToAcc(m.Address)
 
-			if aErr != nil {
-				fmt.Println("convert to account failed")
-				panic("error!!!!")
-			}
-			coins := types.ConvertIntToCoin(params, m.Amount)
-			fmt.Println("time to mint")
-			k.MintCoins(ctx, coins)
-			fmt.Printf("Coins are minted to address = %s\n", acc.String())
-			mErr := k.AddNewMint(ctx, coins, acc)
-			if mErr != nil {
-				fmt.Println(mErr.Error())
-			}
-			fmt.Println("Coins have been minted")
+		if aErr != nil {
+			fmt.Println("convert to account failed")
+			panic("error!!!!")
 		}
+		coins := types.ConvertIntToCoin(params, m.Amount)
+		fmt.Println("time to mint")
+		k.MintCoins(ctx, coins)
+		fmt.Printf("Coins are minted to address = %s\n", acc.String())
+		mErr := k.AddNewMint(ctx, coins, acc)
+		if mErr != nil {
+			fmt.Println(mErr.Error())
+		}
+		fmt.Println("Coins have been minted")
 	}
+	//}
 }
 
 func isNodeSyncing() bool {
