@@ -39,10 +39,9 @@ type HedgehogData struct {
 type MintCache struct {
 	stop chan struct{}
 
-	wg      sync.WaitGroup
-	mu      sync.RWMutex
-	mints   map[uint64]Mint
-	notInit int64
+	wg    sync.WaitGroup
+	mu    sync.RWMutex
+	mints map[uint64]Mint
 
 	//mints *cache.Cache
 }
@@ -65,16 +64,19 @@ func (e *ErrorWhenGettingCache) Error() string {
 }
 
 func (mc *MintCache) cleanupCache() {
-	// Wait for the configuration value to be set
+	// Define hedgehogUrl at the function scope
 	var hedgehogUrl string
+
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
+
 	if first {
-		hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+		hedgehogUrl = viper.GetString("hedgehog.hedgehog_url") // Notice the change here
 		fmt.Println("hedgehogUrl in ugdmint:", hedgehogUrl)
 		mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 		first = false
 	}
+
 	for {
 		select {
 		case <-mc.stop:
@@ -91,18 +93,16 @@ func (mc *MintCache) cleanupCache() {
 func GetCache() *MintCache {
 	fmt.Println("Getting cache")
 	fmt.Println(c)
-	if c.notInit == 0 {
-		fmt.Println("Making a new Chache!!!!!!!!!!!")
-		c = NewCache()
+	if c.mu == (sync.RWMutex{}) {
+		return NewCache()
 	}
 	return c
 }
 
 func NewCache() *MintCache {
 	mc := &MintCache{
-		mints:   make(map[uint64]Mint),
-		stop:    make(chan struct{}),
-		notInit: 1,
+		mints: make(map[uint64]Mint),
+		stop:  make(chan struct{}),
 	}
 
 	mc.wg.Add(1)
