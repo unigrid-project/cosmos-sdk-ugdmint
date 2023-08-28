@@ -64,19 +64,14 @@ func (e *ErrorWhenGettingCache) Error() string {
 }
 
 func (mc *MintCache) cleanupCache() {
-	// Define hedgehogUrl at the function scope
-	var hedgehogUrl string
-
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-
 	if first {
-		hedgehogUrl = viper.GetString("hedgehog.hedgehog_url") // Notice the change here
-		fmt.Println("hedgehogUrl in ugdmint:", hedgehogUrl)
+		hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+		fmt.Println("hedgehogUrl in ugdmint 1:", hedgehogUrl)
 		mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 		first = false
 	}
-
 	for {
 		select {
 		case <-mc.stop:
@@ -84,6 +79,8 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			// Update cache with new entries if any are found
+			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
+			fmt.Println("hedgehogUrl in ugdmint 2:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 			mc.mu.Unlock()
 		}
