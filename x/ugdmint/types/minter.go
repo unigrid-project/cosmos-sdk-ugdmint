@@ -42,7 +42,7 @@ type MintCache struct {
 	wg    sync.WaitGroup
 	mu    sync.RWMutex
 	mints map[uint64]Mint
-
+	first bool
 	//mints *cache.Cache
 }
 
@@ -55,8 +55,8 @@ const (
 
 var (
 	c          = &MintCache{}
+	once       sync.Once
 	currHeigth = uint64(1)
-	first      = true
 )
 
 func (e *ErrorWhenGettingCache) Error() string {
@@ -66,11 +66,11 @@ func (e *ErrorWhenGettingCache) Error() string {
 func (mc *MintCache) cleanupCache() {
 	t := time.NewTicker(cacheUpdateInterval)
 	defer t.Stop()
-	if first {
+	if mc.first { // Use mc.first instead of global first
 		hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
 		fmt.Println("hedgehogUrl in ugdmint 1:", hedgehogUrl)
 		mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
-		first = false
+		mc.first = false
 	}
 	for {
 		select {
@@ -78,7 +78,6 @@ func (mc *MintCache) cleanupCache() {
 			return
 		case <-t.C:
 			mc.mu.Lock()
-			// Update cache with new entries if any are found
 			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
 			fmt.Println("hedgehogUrl in ugdmint 2:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
@@ -89,10 +88,9 @@ func (mc *MintCache) cleanupCache() {
 
 func GetCache() *MintCache {
 	fmt.Println("Getting cache")
-	fmt.Println(c)
-	if c.mu == (sync.RWMutex{}) {
-		return NewCache()
-	}
+	once.Do(func() {
+		c = NewCache()
+	})
 	return c
 }
 
@@ -100,6 +98,7 @@ func NewCache() *MintCache {
 	mc := &MintCache{
 		mints: make(map[uint64]Mint),
 		stop:  make(chan struct{}),
+		first: true, // Initialize it here
 	}
 
 	mc.wg.Add(1)
