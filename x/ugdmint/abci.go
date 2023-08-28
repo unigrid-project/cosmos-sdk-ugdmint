@@ -1,9 +1,7 @@
 package ugdmint
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -77,9 +75,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	mc := types.GetCache()
 	fmt.Printf("Heigth: %d\n", height)
 	m, mErr := mc.Read(height)
-	//if isNodeSyncing() {
-	//	fmt.Println("Node is syncing. Skipping the minting process.")
-	//} else {
 	if mErr == nil {
 		fmt.Println("There were no errors when checking height. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
@@ -98,24 +93,4 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		fmt.Println("Coins have been minted")
 	}
-	//}
-}
-
-func isNodeSyncing() bool {
-	resp, err := http.Get("http://localhost:26657/status")
-	if err != nil {
-		// Handle error or return true to be safe
-		return true
-	}
-	defer resp.Body.Close()
-
-	var statusResponse StatusResponse
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&statusResponse)
-	if err != nil {
-		// Handle error or return true to be safe
-		return true
-	}
-
-	return statusResponse.Result.SyncInfo.CatchingUp
 }
