@@ -54,7 +54,7 @@ const (
 )
 
 var (
-	c          = NewCache()
+	c          = &MintCache{}
 	currHeigth = uint64(1)
 	first      = true
 )
