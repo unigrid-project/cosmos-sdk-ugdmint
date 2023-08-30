@@ -88,18 +88,28 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		// get the actual account from the account keeper
 		account := k.GetAccount(ctx, acc)
-		fmt.Println("Context:", ctx)
-		fmt.Println("Account:", account)
+		fmt.Println("Acc:", acc)
 
-		if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
+		if account == nil {
+			// Create a new BaseAccount with the address
+			baseAcc := authtypes.NewBaseAccountWithAddress(acc)
+			fmt.Println("BaseAccount:", baseAcc)
+			// Set the initial balance for the account (if you have any initial balance to set)
+			// baseAcc.SetCoins(initialBalance)
+
+			// Convert the BaseAccount to a DelayedVestingAccount
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
-			// Get the full balance of the account
-			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
-			// Ensure you've imported the correct vesting package
-			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
+			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
 			fmt.Println("Vesting Account:", vestingAcc)
+			// Set this new account in the keeper
+			k.SetAccount(ctx, vestingAcc)
+		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
+			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
+			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
+			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
 		}
+
 		coins := types.ConvertIntToCoin(params, m.Amount)
 		fmt.Println("time to mint")
 		k.MintCoins(ctx, coins)
