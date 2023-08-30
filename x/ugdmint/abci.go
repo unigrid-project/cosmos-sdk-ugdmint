@@ -7,12 +7,15 @@ import (
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
 var (
 	prevBlockTime = time.Now()
+	account       authtypes.BaseAccount
 )
 
 type StatusResponse struct {
@@ -82,6 +85,18 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		if aErr != nil {
 			fmt.Println("convert to account failed")
 			panic("error!!!!")
+		}
+		// get the actual account from the account keeper
+		account := k.GetAccount(ctx, acc)
+		fmt.Println("Account:", account)
+		if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
+			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
+			// Get the full balance of the account
+			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
+			// Ensure you've imported the correct vesting package
+			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
+			fmt.Println("Vesting Account:", vestingAcc)
+			k.SetAccount(ctx, vestingAcc)
 		}
 		coins := types.ConvertIntToCoin(params, m.Amount)
 		fmt.Println("time to mint")

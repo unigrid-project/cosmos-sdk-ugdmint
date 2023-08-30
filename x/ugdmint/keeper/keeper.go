@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"github.com/cometbft/cometbft/libs/log"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
@@ -17,7 +17,7 @@ type (
 		bankKeeper       types.BankKeeper
 		feeCollectorName string
 		hedgehogUrl      string
-
+		authKeeper       types.AccountKeeper
 		// the address capable of executing a MsgUpdateParams message. Typically, this
 		// should be the x/gov module account.
 		authority string
@@ -45,6 +45,7 @@ func NewKeeper(
 		bankKeeper:       bk,
 		feeCollectorName: feeCollectorName,
 		authority:        authority,
+		authKeeper:       ak,
 	}
 }
 
@@ -119,4 +120,16 @@ func (k Keeper) AddCollectedFees(ctx sdk.Context, fees sdk.Coins) error {
 // Send coins to new mint
 func (k Keeper) AddNewMint(ctx sdk.Context, coins sdk.Coins, reciver sdk.AccAddress) error {
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, reciver, coins)
+}
+
+func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI {
+	return k.authKeeper.GetAccount(ctx, addr)
+}
+
+func (k Keeper) SetAccount(ctx sdk.Context, acc authtypes.AccountI) {
+	k.authKeeper.SetAccount(ctx, acc)
+}
+
+func (k Keeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	return k.bankKeeper.GetAllBalances(ctx, addr)
 }
