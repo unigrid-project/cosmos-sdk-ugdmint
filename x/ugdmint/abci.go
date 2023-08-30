@@ -88,7 +88,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		// get the actual account from the account keeper
 		account := k.GetAccount(ctx, acc)
+		fmt.Println("Context:", ctx)
 		fmt.Println("Account:", account)
+
 		if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			// Get the full balance of the account
