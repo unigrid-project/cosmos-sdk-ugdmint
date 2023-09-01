@@ -76,7 +76,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
 	mc := types.GetCache()
-	fmt.Printf("Heigth: %d\n", height)
+	fmt.Printf("height: %d\n", height)
 	m, mErr := mc.Read(height)
 	if mErr == nil {
 		fmt.Println("There were no errors when checking height. its time to mint to address!!")
@@ -108,7 +108,39 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
 			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
-		}
+		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
+			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
+
+			startTime := ctx.BlockTime().Unix() // Current block time as start time
+
+			// Calculate the amount for each vesting period for each coin in currentBalances
+			amountPerPeriod := sdk.Coins{}
+			for _, coin := range currentBalances {
+				amount := coin.Amount.Quo(sdk.NewInt(10))
+				amountPerPeriod = append(amountPerPeriod, sdk.NewCoin(coin.Denom, amount))
+			}
+
+			// Create 10 vesting periods, each 1 minute apart
+			periods := vestingtypes.Periods{}
+			for i := 0; i < 10; i++ {
+				period := vestingtypes.Period{
+					Length: 60, // 60 seconds = 1 minute
+					Amount: amountPerPeriod,
+				}
+				periods = append(periods, period)
+			}
+			baseAccount := &authtypes.BaseAccount{
+				Address:       baseAcc.Address,
+				PubKey:        baseAcc.PubKey,
+				AccountNumber: baseAcc.AccountNumber,
+				Sequence:      baseAcc.Sequence,
+			}
+
+			// Create the PeriodicVestingAccount
+			vestingAcc := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
+			k.SetAccount(ctx, vestingAcc)
+		} //else if baseAcc, ok := account.(*vestingtypes.PeriodicVestingAccount); ok {
+		//}
 
 		coins := types.ConvertIntToCoin(params, m.Amount)
 		fmt.Println("time to mint")

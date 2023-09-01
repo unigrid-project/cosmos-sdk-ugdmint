@@ -206,7 +206,7 @@ func TestCanMintFromHedgehog(t *testing.T) {
 
 	cache.callHedgehog(server.URL + "/gridspork/mint-storage")
 	for _, cv := range compareValue {
-		h, er := strconv.ParseInt(cv.Heigth, 10, 64)
+		h, er := strconv.ParseInt(cv.height, 10, 64)
 		if er != nil {
 			panic("it whent to hell")
 		}

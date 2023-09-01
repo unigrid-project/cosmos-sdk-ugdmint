@@ -19,11 +19,19 @@ import (
 type Mint struct {
 	Address string
 	Amount  int
-	height  string
+	Height  string
 }
 
 type Mints struct {
 	Mints map[string]int
+}
+
+type VestingData struct {
+	Address  string
+	Amount   int
+	Start    time.Time
+	Duration time.Duration
+	Parts    int
 }
 
 type HedgehogData struct {
@@ -31,19 +39,21 @@ type HedgehogData struct {
 	PreviousTimeStamp string `json:"previousTimeStamp"`
 	Flags             int    `json:"flags"`
 	Hedgehogtype      string `json:"type"`
-	Data              Mints  `json:"data"`
-	PreviousData      Mints  `json:"previousData"`
-	Signature         string `json:"signature"`
+	Data              struct {
+		Mints            map[string]int         `json:"mints"`
+		VestingAddresses map[string]VestingData `json:"vestingAddresses"`
+	} `json:"data"`
+	PreviousData Mints  `json:"previousData"`
+	Signature    string `json:"signature"`
 }
 
 type MintCache struct {
-	stop chan struct{}
-
-	wg    sync.WaitGroup
-	mu    sync.RWMutex
-	mints map[uint64]Mint
-	first bool
-	//mints *cache.Cache
+	stop     chan struct{}
+	wg       sync.WaitGroup
+	mu       sync.RWMutex
+	mints    map[uint64]Mint
+	vestings map[string]VestingData // New map to store vesting data
+	first    bool
 }
 
 type ErrorWhenGettingCache struct{}
@@ -188,8 +198,6 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 	}
 
 	e := json.Unmarshal(body, &res)
-	//e := json.NewDecoder(response.Body).Decode(res)
-
 	if e != nil {
 		fmt.Println(e.Error())
 		//report response error in log
@@ -209,17 +217,42 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 			continue // Skip this iteration and move to the next one
 		}
 
-		if h >= blockHeight && strings.Contains(a, "unigrid") {
+		// Check if the address exists in vesting data and if the block height is relevant
+		if _, exists := mc.vestings[a]; exists && h >= blockHeight && strings.Contains(a, "unigrid") {
 			uh := uint64(h)
 			mc.mints[uh] = Mint{
 				Address: a,
-				height:  height,
+				Height:  height,
 				Amount:  amount,
 			}
 		}
 	}
+
 	for _, m := range mc.mints {
 		fmt.Println(m)
+	}
+
+	// Handle vesting data
+	for key, vesting := range res.Data.VestingAddresses {
+		address := strings.TrimPrefix(key, "Address(wif=")
+		address = strings.TrimSuffix(address, ")")
+		mc.vestings[address] = VestingData{
+			Address:  address,
+			Amount:   vesting.Amount,
+			Start:    vesting.Start,    // Directly assign
+			Duration: vesting.Duration, // Directly assign
+			Parts:    vesting.Parts,
+		}
+	}
+
+	// Print minting data for debugging
+	for _, m := range mc.mints {
+		fmt.Println(m)
+	}
+
+	// Print vesting data for debugging
+	for _, v := range mc.vestings {
+		fmt.Println(v)
 	}
 }
 
