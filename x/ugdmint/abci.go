@@ -96,7 +96,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			fmt.Println("BaseAccount:", baseAcc)
 			// Set the initial balance for the account (if you have any initial balance to set)
 			// baseAcc.SetCoins(initialBalance)
-
+			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			// Convert the BaseAccount to a DelayedVestingAccount
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
@@ -106,6 +106,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
+			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
 		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
@@ -129,6 +130,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 				}
 				periods = append(periods, period)
 			}
+			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			baseAccount := &authtypes.BaseAccount{
 				Address:       baseAcc.Address,
 				PubKey:        baseAcc.PubKey,
