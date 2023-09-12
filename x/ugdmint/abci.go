@@ -1,7 +1,9 @@
 package ugdmint
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/cometbft/cometbft/libs/log"
@@ -28,6 +30,17 @@ type StatusResponse struct {
 
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+	syncinfo, syncerr := getNodeStatus()
+	if syncerr != nil {
+		// Handle error, maybe log it and return
+		fmt.Println("Error fetching node status:", syncerr)
+		return
+	}
+
+	if syncinfo.Result.SyncInfo.CatchingUp {
+		fmt.Println("Node is catching up")
+		return
+	}
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
@@ -154,4 +167,20 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		fmt.Println("Coins have been minted")
 	}
+}
+
+func getNodeStatus() (StatusResponse, error) {
+	resp, err := http.Get("http://localhost:26657/status")
+	if err != nil {
+		return StatusResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	var status StatusResponse
+	err = json.NewDecoder(resp.Body).Decode(&status)
+	if err != nil {
+		return StatusResponse{}, err
+	}
+
+	return status, nil
 }
