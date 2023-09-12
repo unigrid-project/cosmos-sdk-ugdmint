@@ -30,6 +30,7 @@ type StatusResponse struct {
 
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 	syncinfo, syncerr := getNodeStatus()
 	if syncerr != nil {
 		// Handle error, maybe log it and return
@@ -41,7 +42,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		fmt.Println("Node is catching up")
 		return
 	}
-	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
