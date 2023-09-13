@@ -260,27 +260,27 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	var nSubsidy float64 = 1
 
-	currheight = height
-	height = height + 2500000
-	fmt.Println(params.SubsidyHalvingInterval.Abs().TruncateInt64())
-	nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
-	fmt.Printf("nBehalf: %d \n", nBehalf)
-	for i := 0; i < int(nBehalf); i++ {
-		nSubsidy = nSubsidy * 99.0 / 100.0
-	}
+	// currheight = height
+	// height = height + 2500000
+	// fmt.Println(params.SubsidyHalvingInterval.Abs().TruncateInt64())
+	// nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
+	// fmt.Printf("nBehalf: %d \n", nBehalf)
+	// for i := 0; i < int(nBehalf); i++ {
+	// 	nSubsidy = nSubsidy * 99.0 / 100.0
+	// }
 
-	fmt.Printf("nsubsidy: %f \n", nSubsidy)
-	fmt.Println(ctx.BlockTime().Unix())
-	fmt.Println(prevCtx.BlockTime().Unix())
-	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
-		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
-	} else {
-		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
-	}
+	// fmt.Printf("nsubsidy: %f \n", nSubsidy)
+	// fmt.Println(ctx.BlockTime().Unix())
+	// fmt.Println(prevCtx.BlockTime().Unix())
+	// if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
+	// 	nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
+	// } else {
+	// 	nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
+	// }
 
-	if nSubsidy < 0 {
-		nSubsidy = 0
-	}
+	// if nSubsidy < 0 {
+	// 	nSubsidy = 0
+	// }
 
 	coin := sdk.NewCoin(params.MintDenom, sdk.NewIntFromUint64(uint64(nSubsidy*math.Pow10(8))))
 
