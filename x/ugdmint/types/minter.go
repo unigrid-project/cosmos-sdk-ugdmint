@@ -48,6 +48,8 @@ type MintCache struct {
 
 type ErrorWhenGettingCache struct{}
 
+const PreviousBlockTimeKey = "previousBlockTime"
+
 const (
 	//defaultExperation   = 1 * time.Minute
 	cacheUpdateInterval = 15 * time.Second
@@ -256,7 +258,7 @@ func ValidateMinter(minter Minter) error {
 
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
-func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevBlockTime time.Time) sdk.Coins {
+func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coins {
 
 	var nSubsidy float64 = 1
 
@@ -271,12 +273,12 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	fmt.Printf("nsubsidy: %f \n", nSubsidy)
 	fmt.Println("ctx.BlockTime(): ", ctx.BlockTime().Unix())
-	fmt.Println("prevBlockTime:", prevBlockTime.Unix())
+	fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime().Unix())
 
-	if ctx.BlockTime().Unix() <= prevBlockTime.Unix() {
+	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
 		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
 	} else {
-		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevBlockTime.Unix()) / 60.0)
+		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
 	}
 
 	if nSubsidy < 0 {

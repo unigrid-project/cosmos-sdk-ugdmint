@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -28,7 +29,7 @@ type StatusResponse struct {
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-	prevBlockTime := k.GetPreviousBlockTime(ctx)
+	//prevBlockTime := k.GetPreviousBlockTime(ctx)
 
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
@@ -40,7 +41,10 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	k.SetMinter(ctx, minter)
 
 	// mint coins, update supply
-	mintedCoins := minter.BlockProvision(params, height, ctx, prevBlockTime)
+
+	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(ctx.BlockHeight() - 1)
+	fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime())
+	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
 	ok, mintedCoin := mintedCoins.Find("ugd")
 
 	if !ok {
