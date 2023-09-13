@@ -1,12 +1,9 @@
 package ugdmint
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -31,17 +28,7 @@ type StatusResponse struct {
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-	// syncinfo, syncerr := getNodeStatus()
-	// if syncerr != nil {
-	// 	// Handle error, maybe log it and return
-	// 	fmt.Println("Error fetching node status:", syncerr)
-	// 	return
-	// }
-
-	// if syncinfo.Result.SyncInfo.CatchingUp {
-	// 	fmt.Println("Node is catching up")
-	// 	return
-	// }
+	prevBlockTime := k.GetPreviousBlockTime(ctx)
 
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
@@ -52,11 +39,8 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
 
-	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockTime(prevBlockTime)
-	prevBlockTime = ctx.BlockTime()
-
 	// mint coins, update supply
-	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
+	mintedCoins := minter.BlockProvision(params, height, ctx, prevBlockTime)
 	ok, mintedCoin := mintedCoins.Find("ugd")
 
 	if !ok {
@@ -167,20 +151,6 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		fmt.Println("Coins have been minted")
 	}
-}
-
-func getNodeStatus() (StatusResponse, error) {
-	resp, err := http.Get("http://localhost:26657/status")
-	if err != nil {
-		return StatusResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	var status StatusResponse
-	err = json.NewDecoder(resp.Body).Decode(&status)
-	if err != nil {
-		return StatusResponse{}, err
-	}
-
-	return status, nil
+	// set prev block time in the store
+	k.SetPreviousBlockTime(ctx, ctx.BlockTime())
 }
