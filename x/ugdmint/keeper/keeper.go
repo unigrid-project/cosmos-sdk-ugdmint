@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
-	"time"
-
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -51,8 +48,6 @@ func NewKeeper(
 		authKeeper:       ak,
 	}
 }
-
-const PreviousBlockTimeKey = "previousBlockTime"
 
 // SetHedgehogUrl sets the module's hedgehog url.
 func (k *Keeper) SetHedgehogUrl(url string) {
@@ -137,20 +132,4 @@ func (k Keeper) SetAccount(ctx sdk.Context, acc authtypes.AccountI) {
 
 func (k Keeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	return k.bankKeeper.GetAllBalances(ctx, addr)
-}
-
-func (k Keeper) GetPreviousBlockTime(ctx sdk.Context) time.Time {
-	store := ctx.KVStore(k.storeKey)
-	b := store.Get([]byte(PreviousBlockTimeKey))
-	if b == nil {
-		return time.Time{} // or some default value
-	}
-	return time.Unix(int64(binary.BigEndian.Uint64(b)), 0)
-}
-
-func (k Keeper) SetPreviousBlockTime(ctx sdk.Context, t time.Time) {
-	store := ctx.KVStore(k.storeKey)
-	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, uint64(t.Unix()))
-	store.Set([]byte(PreviousBlockTimeKey), b)
 }

@@ -70,7 +70,7 @@ func (mc *MintCache) cleanupCache() {
 	defer t.Stop()
 	if mc.first { // Use mc.first instead of global first
 		hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
-		fmt.Println("hedgehogUrl in ugdmint 1:", hedgehogUrl)
+		//fmt.Println("hedgehogUrl in ugdmint 1:", hedgehogUrl)
 		mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 		mc.first = false
 	}
@@ -81,7 +81,7 @@ func (mc *MintCache) cleanupCache() {
 		case <-t.C:
 			mc.mu.Lock()
 			hedgehogUrl := viper.GetString("hedgehog.hedgehog_url")
-			fmt.Println("hedgehogUrl in ugdmint 2:", hedgehogUrl)
+			//fmt.Println("hedgehogUrl in ugdmint 2:", hedgehogUrl)
 			mc.callHedgehog(hedgehogUrl + "/gridspork/mint-storage")
 			mc.mu.Unlock()
 		}
@@ -264,16 +264,16 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	currheight = height
 	height = height + 2500000
-	fmt.Println("params.SubsidyHalvingInterval: ", params.SubsidyHalvingInterval.Abs().TruncateInt64())
+	//fmt.Println("params.SubsidyHalvingInterval: ", params.SubsidyHalvingInterval.Abs().TruncateInt64())
 	nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
-	fmt.Printf("nBehalf: %d \n", nBehalf)
+	// fmt.Printf("nBehalf: %d \n", nBehalf)
 	for i := 0; i < int(nBehalf); i++ {
 		nSubsidy = nSubsidy * 99.0 / 100.0
 	}
 
-	fmt.Printf("nsubsidy: %f \n", nSubsidy)
-	fmt.Println("ctx.BlockTime(): ", ctx.BlockTime().Unix())
-	fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime().Unix())
+	// fmt.Printf("nsubsidy: %f \n", nSubsidy)
+	// fmt.Println("ctx.BlockTime(): ", ctx.BlockTime().Unix())
+	// fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime().Unix())
 
 	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
 		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)

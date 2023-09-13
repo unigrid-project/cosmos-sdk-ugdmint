@@ -29,7 +29,6 @@ type StatusResponse struct {
 // BeginBlocker mints new tokens for the previous block.
 func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-	//prevBlockTime := k.GetPreviousBlockTime(ctx)
 
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
@@ -40,10 +39,9 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
 
-	// mint coins, update supply
-
+	// get the previous block time from the context
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(ctx.BlockHeight() - 1)
-	fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime())
+	// mint coins, update supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
 	ok, mintedCoin := mintedCoins.Find("ugd")
 
@@ -77,10 +75,10 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 
 	//Start the mint cache and minting of new tokens when thier are any in hedgehog.
 	mc := types.GetCache()
-	fmt.Printf("height: %d\n", height)
+	//fmt.Printf("height: %d\n", height)
 	m, mErr := mc.Read(height)
 	if mErr == nil {
-		fmt.Println("There were no errors when checking height. its time to mint to address!!")
+		//fmt.Println("There were no errors when checking height. its time to mint to address!!")
 		acc, aErr := types.ConvertStringToAcc(m.Address)
 
 		if aErr != nil {
@@ -89,25 +87,25 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		}
 		// get the actual account from the account keeper
 		account := k.GetAccount(ctx, acc)
-		fmt.Println("Acc:", acc)
+		//fmt.Println("Acc:", acc)
 
 		if account == nil {
 			// Create a new BaseAccount with the address
 			baseAcc := authtypes.NewBaseAccountWithAddress(acc)
-			fmt.Println("BaseAccount:", baseAcc)
+			//fmt.Println("BaseAccount:", baseAcc)
 			// Set the initial balance for the account (if you have any initial balance to set)
 			// baseAcc.SetCoins(initialBalance)
-			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
+			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			// Convert the BaseAccount to a DelayedVestingAccount
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
-			fmt.Println("Vesting Account:", vestingAcc)
+			//fmt.Println("Vesting Account:", vestingAcc)
 			// Set this new account in the keeper
 			k.SetAccount(ctx, vestingAcc)
 		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
-			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
+			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
 		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
@@ -146,15 +144,13 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 		//}
 
 		coins := types.ConvertIntToCoin(params, m.Amount)
-		fmt.Println("time to mint")
+		//fmt.Println("time to mint")
 		k.MintCoins(ctx, coins)
-		fmt.Printf("Coins are minted to address = %s\n", acc.String())
+		//fmt.Printf("Coins are minted to address = %s\n", acc.String())
 		mErr := k.AddNewMint(ctx, coins, acc)
 		if mErr != nil {
 			fmt.Println(mErr.Error())
 		}
-		fmt.Println("Coins have been minted")
+		//fmt.Println("Coins have been minted")
 	}
-	// set prev block time in the store
-	k.SetPreviousBlockTime(ctx, ctx.BlockTime())
 }
