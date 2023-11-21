@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	math "math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -258,38 +259,66 @@ func ValidateMinter(minter Minter) error {
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
 func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coins {
-	// Adjust the height to align with the Dash-forked chain's state
-	adjustedHeight := height + 2500000
+	fmt.Printf("[BlockProvision] Called: height=%d\n", height)
+	fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
+	// Calculate the number of blocks per minute dynamically
+	blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
+	fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
 
-	// Set the subsidy
-	var nSubsidy int64 = 1
-	const blockTimeRatio float64 = 60.0 / 5.0 // Ratio of block times (1 minute / 5 seconds)
+	var nSubsidy float64 = 1
+	fmt.Printf("[BlockProvision] Initial nSubsidy: %f\n", nSubsidy)
 
-	// Scale down the subsidy based on the block time difference
-	nSubsidy = int64(float64(nSubsidy) / blockTimeRatio)
+	adjustedHeight := height + 2685066
+	fmt.Printf("[BlockProvision] Adjusted Height: %d\n", adjustedHeight)
 
-	// Apply further reduction based on adjusted height
-	nBehalf := int64(adjustedHeight-100000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
+	nBehalf := int64(adjustedHeight-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
+	fmt.Printf("[BlockProvision] nBehalf: %d\n", nBehalf)
+
 	for i := 0; i < int(nBehalf); i++ {
-		nSubsidy = nSubsidy * 99 / 100
+		nSubsidy = nSubsidy * 99.0 / 100.0
+		//fmt.Printf("[BlockProvision] nSubsidy after %dth halving: %f\n", i+1, nSubsidy)
 	}
 
-	// Ensure subsidy does not go negative
+	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
+		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
+		fmt.Printf("[BlockProvision] nSubsidy adjusted for block time <= prev block time: %f\n", nSubsidy)
+	} else {
+		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
+		fmt.Printf("[BlockProvision] nSubsidy adjusted for block time > prev block time: %f\n", nSubsidy)
+	}
+
+	// Adjust nSubsidy based on the actual blocks per minute
+	// This is the key adjustment to ensure the subsidy aligns with your intended reward rate
+	nSubsidy = nSubsidy / float64(blocksPerMinute)
+
 	if nSubsidy < 0 {
 		nSubsidy = 0
 	}
 
-	// Convert to coin
-	coin := sdk.NewCoin(params.MintDenom, sdk.NewInt(nSubsidy))
-
-	// Logging at approximately one-minute intervals (every 12th block)
-	// this should show us the same values currently on the old network
-	const minuteInterval = 12 // Number of blocks in approximately one minute
-	if height%minuteInterval == 0 {
-		var totalSubsidy int64 = nSubsidy * minuteInterval
-		totalCoin := sdk.NewCoin(params.MintDenom, sdk.NewInt(totalSubsidy))
-		fmt.Printf("Block Height: %d, Adjusted Height: %d, Total Subsidy per Minute: %s\n", height, adjustedHeight, totalCoin.String())
-	}
+	// Convert to coin with the adjusted subsidy
+	subsidyInSmallestUnit := int64(nSubsidy * math.Pow10(8))
+	coin := sdk.NewCoin(params.MintDenom, sdk.NewInt(subsidyInSmallestUnit))
+	fmt.Printf("[BlockProvision] Coin generated: %s\n", coin.String())
 
 	return sdk.NewCoins(coin)
+}
+
+func calculateBlocksPerMinute(ctx sdk.Context, prevCtx sdk.Context) int {
+	// Get the Unix timestamps of the current and previous blocks
+	currentTime := ctx.BlockTime().Unix()
+	previousTime := prevCtx.BlockTime().Unix()
+
+	// Calculate the time difference in seconds between the blocks
+	timeDiff := currentTime - previousTime
+
+	// Handle the case where timeDiff is zero to avoid division by zero
+	if timeDiff <= 0 {
+		timeDiff = 1 // Assume a minimum of 1 second per block as a default
+	}
+
+	// Calculate the number of blocks that would be produced in a minute
+	// 60 seconds per minute divided by the time difference per block
+	blocksPerMinute := 60 / timeDiff
+
+	return int(blocksPerMinute)
 }
