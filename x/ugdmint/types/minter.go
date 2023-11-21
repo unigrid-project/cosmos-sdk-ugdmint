@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -259,53 +258,38 @@ func ValidateMinter(minter Minter) error {
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
 func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coins {
+	// Adjust the height to align with the Dash-forked chain's state
+	adjustedHeight := height + 2500000
 
-	var nSubsidy float64 = 1
+	// Set the subsidy
+	var nSubsidy int64 = 1
+	const blockTimeRatio float64 = 60.0 / 5.0 // Ratio of block times (1 minute / 5 seconds)
 
-	currheight = height
-	height = height + 2500000
-	//fmt.Println("params.SubsidyHalvingInterval: ", params.SubsidyHalvingInterval.Abs().TruncateInt64())
-	nBehalf := int64(height-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
-	// fmt.Printf("nBehalf: %d \n", nBehalf)
+	// Scale down the subsidy based on the block time difference
+	nSubsidy = int64(float64(nSubsidy) / blockTimeRatio)
+
+	// Apply further reduction based on adjusted height
+	nBehalf := int64(adjustedHeight-100000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
 	for i := 0; i < int(nBehalf); i++ {
-		nSubsidy = nSubsidy * 99.0 / 100.0
+		nSubsidy = nSubsidy * 99 / 100
 	}
 
-	// fmt.Printf("nsubsidy: %f \n", nSubsidy)
-	// fmt.Println("ctx.BlockTime(): ", ctx.BlockTime().Unix())
-	// fmt.Println("prevCtx.BlockTime():", prevCtx.BlockTime().Unix())
-
-	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
-		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
-	} else {
-		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
-	}
-
+	// Ensure subsidy does not go negative
 	if nSubsidy < 0 {
 		nSubsidy = 0
 	}
 
-	coin := sdk.NewCoin(params.MintDenom, sdk.NewIntFromUint64(uint64(nSubsidy*math.Pow10(8))))
+	// Convert to coin
+	coin := sdk.NewCoin(params.MintDenom, sdk.NewInt(nSubsidy))
 
-	/*s := fmt.Sprintf("%f", nSubsidy)
-	fmt.Printf("subsidy: %s \n", s)
-	//unigrid1jv65s3grqf6v6jl3dp4t6c9t9rk99cd8g6xaxu
-	//Convertion from decimal to ugd and fermi. ugd is 10^8 and fermi is exponent 0.
-	lDec, _ := sdk.NewDecFromStr(s)
-	fmt.Println(lDec)
-	deccoin := sdk.NewDecCoinFromDec("ugd", lDec)
-	ugd, dcoin := deccoin.TruncateDecimal()
-	fmt.Println(dcoin.Amount)
-	d := dcoin.Amount.MulInt64(int64(math.Pow10(8)))
-	dString := fmt.Sprintf("%dfermi", d)
-	fmt.Println("d")
-	fmt.Println(d)
-	fermi, _ := sdk.ParseCoinNormalized(dString)
-
-	fmt.Println(ugd.Amount)
-	fmt.Println(fermi.Amount)
-
-	coins := sdk.NewCoins(ugd, fermi) */
+	// Logging at approximately one-minute intervals (every 12th block)
+	// this should show us the same values currently on the old network
+	const minuteInterval = 12 // Number of blocks in approximately one minute
+	if height%minuteInterval == 0 {
+		var totalSubsidy int64 = nSubsidy * minuteInterval
+		totalCoin := sdk.NewCoin(params.MintDenom, sdk.NewInt(totalSubsidy))
+		fmt.Printf("Block Height: %d, Adjusted Height: %d, Total Subsidy per Minute: %s\n", height, adjustedHeight, totalCoin.String())
+	}
 
 	return sdk.NewCoins(coin)
 }
