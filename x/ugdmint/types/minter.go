@@ -262,7 +262,8 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	fmt.Printf("[BlockProvision] Called: height=%d\n", height)
 	fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
 	// Calculate the number of blocks per minute dynamically
-	blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
+	//blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
+	blocksPerMinute := 12
 	fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
 
 	var nSubsidy float64 = 1
@@ -303,22 +304,23 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	return sdk.NewCoins(coin)
 }
 
-func calculateBlocksPerMinute(ctx sdk.Context, prevCtx sdk.Context) int {
-	// Get the Unix timestamps of the current and previous blocks
-	currentTime := ctx.BlockTime().Unix()
-	previousTime := prevCtx.BlockTime().Unix()
+// this function is not working as intended
+// TODO find a 100% consistent way to calculate the number of blocks per minute
+// func calculateBlocksPerMinute(ctx sdk.Context, prevCtx sdk.Context) int {
+// 	currentTime := ctx.BlockTime().Unix()
+// 	previousTime := prevCtx.BlockTime().Unix()
 
-	// Calculate the time difference in seconds between the blocks
-	timeDiff := currentTime - previousTime
+// 	// Calculate the time difference in seconds between the blocks
+// 	timeDiff := currentTime - previousTime
+// 	fmt.Printf("[calculateBlocksPerMinute] Time difference between blocks: %d seconds\n", timeDiff)
 
-	// Handle the case where timeDiff is zero to avoid division by zero
-	if timeDiff <= 0 {
-		timeDiff = 1 // Assume a minimum of 1 second per block as a default
-	}
+// 	// If timeDiff is 0 or negative, which shouldn't normally happen, use 5 seconds as a default
+// 	if timeDiff <= 0 {
+// 		timeDiff = 5 // Default to 5 seconds if the time difference is too small
+// 	}
 
-	// Calculate the number of blocks that would be produced in a minute
-	// 60 seconds per minute divided by the time difference per block
-	blocksPerMinute := 60 / timeDiff
+// 	// Calculate the number of blocks that would be produced in a minute
+// 	blocksPerMinute := 60 / timeDiff
 
-	return int(blocksPerMinute)
-}
+// 	return int(blocksPerMinute)
+// }
