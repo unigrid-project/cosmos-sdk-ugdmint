@@ -14,6 +14,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/spf13/cobra v1.6.1
+	github.com/unigrid-project/cosmos-sdk-common v0.0.3
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
@@ -21,7 +22,7 @@ require (
 )
 
 require (
-	github.com/unigrid-project/cosmos-sdk-common v0.0.3 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 )
