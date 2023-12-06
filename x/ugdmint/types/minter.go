@@ -160,7 +160,11 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Transport: tr}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second, // set to 10 seconds or as appropriate
+	}
+
 	response, err := client.Get(serverUrl)
 
 	if err != nil {
