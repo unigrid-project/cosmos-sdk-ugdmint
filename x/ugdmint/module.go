@@ -2,8 +2,11 @@ package ugdmint
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -38,6 +41,8 @@ var (
 	_ module.AppModuleBasic      = AppModuleBasic{}
 	_ module.AppModuleSimulation = AppModule{}
 )
+
+var httpClient *http.Client
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
@@ -205,6 +210,15 @@ func init() {
 	appmodule.Register(&modulev1.Module{},
 		appmodule.Provide(ProvideModule),
 	)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // Adjust as necessary
+	}
+	httpClient = &http.Client{
+		Transport: tr,
+		Timeout:   10 * time.Second, // Example timeout
+	}
+
+	closeIdleConnectionsPeriodically()
 }
 
 //nolint:revive
@@ -259,4 +273,15 @@ func ProvideModule(in MintInputs) MintOutputs {
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.InflationCalculationFn, in.LegacySubspace)
 
 	return MintOutputs{MintKeeper: k, Module: m}
+}
+
+func closeIdleConnectionsPeriodically() {
+	ticker := time.NewTicker(1 * time.Minute)
+	go func() {
+		for range ticker.C {
+			if tr, ok := httpClient.Transport.(*http.Transport); ok {
+				tr.CloseIdleConnections()
+			}
+		}
+	}()
 }

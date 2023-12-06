@@ -21,6 +21,7 @@ require (
 )
 
 require (
+	github.com/unigrid-project/cosmos-sdk-common v0.0.2 // indirect
 	google.golang.org/genproto v0.0.0-20230822172742-b8732ec3820d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 )

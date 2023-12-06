@@ -1,12 +1,10 @@
 package types
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	math "math"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -14,6 +12,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/viper"
+	"github.com/unigrid-project/cosmos-sdk-common/common/httpclient"
 )
 
 type Mint struct {
@@ -157,15 +156,8 @@ func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
 }
 
 func (mc *MintCache) callHedgehog(serverUrl string) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   10 * time.Second, // set to 10 seconds or as appropriate
-	}
 
-	response, err := client.Get(serverUrl)
+	response, err := httpclient.Client.Get(serverUrl)
 
 	if err != nil {
 		if err == io.EOF {
