@@ -500,6 +500,8 @@ github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqri
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/unigrid-project/cosmos-sdk-common v0.0.3 h1:g6PkxmiiuVjkJvjcyu5RCTOsRYbb39O+k26VrdqOVSI=
 github.com/unigrid-project/cosmos-sdk-common v0.0.3/go.mod h1:40cAkSp62OjHTtGMdUYQUMwzUEndl6va3uz9asDJl5Q=
+github.com/unigrid-project/cosmos-sdk-common v0.0.6 h1:nvAShtDWIYd1wbtgRW2CknrgOG0OwO4mvgINwTPaBkg=
+github.com/unigrid-project/cosmos-sdk-common v0.0.6/go.mod h1:40cAkSp62OjHTtGMdUYQUMwzUEndl6va3uz9asDJl5Q=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
