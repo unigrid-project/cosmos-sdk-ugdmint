@@ -3,11 +3,13 @@ package simulation
 import (
 	"math/rand"
 
+	"cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
 )
 
 // Simulation operation weights constants
@@ -35,8 +37,8 @@ func SimulateMsgUpdateParams(r *rand.Rand, _ sdk.Context, _ []simtypes.Account) 
 
 	params := types.DefaultParams()
 	params.BlocksPerYear = uint64(simtypes.RandIntBetween(r, 1, 1000000))
-	params.GoalBonded = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 100)), 2)
-	params.SubsidyHalvingInterval = sdk.NewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 100)), 2)
+	params.GoalBonded = math.LegacyNewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 100)), 2)
+	params.SubsidyHalvingInterval = math.LegacyNewDecWithPrec(int64(simtypes.RandIntBetween(r, 1, 100)), 2)
 	params.MintDenom = simtypes.RandStringOfLength(r, 10)
 
 	return &types.MsgUpdateParams{

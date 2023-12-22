@@ -10,7 +10,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	fmt "fmt"
+	"fmt"
 	"log"
 	"math/big"
 	"net/http"
@@ -20,13 +20,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
+
 	"github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
-	//"github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtestutil "github.com/cosmos/cosmos-sdk/x/gov/testutil"
 	"github.com/golang/mock/gomock"
 )
@@ -222,8 +222,8 @@ func TestCanMintFromHedgehog(t *testing.T) {
 
 func TestBlockProvision(t *testing.T) {
 
-	key := sdk.NewKVStoreKey(ModuleName)
-	testCtx := testutil.DefaultContextWithDB(t, key, sdk.NewTransientStoreKey("transient_test"))
+	key := storetypes.NewKVStoreKey(ModuleName)
+	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now()})
 
 	prevCtx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now().Add(-time.Duration(10) * time.Second)})
@@ -236,18 +236,18 @@ func TestBlockProvision(t *testing.T) {
 	acctKeeper.EXPECT().GetModuleAddress(ModuleName).Return(mintAcct).AnyTimes()
 	acctKeeper.EXPECT().GetModuleAccount(gomock.Any(), ModuleName).Return(authtypes.NewEmptyModuleAccount(ModuleName)).AnyTimes()
 	//trackMockBalances(bankKeeper)
-	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) sdkmath.Int {
-		return sdk.TokensFromConsensusPower(power, sdkmath.NewIntFromUint64(1000000))
+	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) math.Int {
+		return sdk.TokensFromConsensusPower(power, math.NewIntFromUint64(1000000))
 	}).AnyTimes()
 	stakingKeeper.EXPECT().BondDenom(ctx).Return("ugd").AnyTimes()
 	stakingKeeper.EXPECT().IterateBondedValidatorsByPower(gomock.Any(), gomock.Any()).AnyTimes()
 	stakingKeeper.EXPECT().IterateDelegations(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(sdkmath.NewInt(10000000)).AnyTimes()
+	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(math.NewInt(10000000)).AnyTimes()
 
 	params := Params{
 		MintDenom:              "ugd",
-		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
-		GoalBonded:             sdk.NewDecWithPrec(67, 2),
+		SubsidyHalvingInterval: math.LegacyNewDecWithPrec(50000, 0),
+		GoalBonded:             math.LegacyNewDecWithPrec(67, 2),
 		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
 	}
 
@@ -269,8 +269,8 @@ func TestBlockProvision(t *testing.T) {
 
 func TestFirstBlockProvision(t *testing.T) {
 
-	key := sdk.NewKVStoreKey(ModuleName)
-	testCtx := testutil.DefaultContextWithDB(t, key, sdk.NewTransientStoreKey("transient_test"))
+	key := storetypes.NewKVStoreKey(ModuleName)
+	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now()})
 
 	prevCtx := testCtx.Ctx.WithBlockHeader(types.Header{Time: time.Now()})
@@ -283,18 +283,18 @@ func TestFirstBlockProvision(t *testing.T) {
 	acctKeeper.EXPECT().GetModuleAddress(ModuleName).Return(mintAcct).AnyTimes()
 	acctKeeper.EXPECT().GetModuleAccount(gomock.Any(), ModuleName).Return(authtypes.NewEmptyModuleAccount(ModuleName)).AnyTimes()
 	//trackMockBalances(bankKeeper)
-	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) sdkmath.Int {
-		return sdk.TokensFromConsensusPower(power, sdkmath.NewIntFromUint64(1000000))
+	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) math.Int {
+		return sdk.TokensFromConsensusPower(power, math.NewIntFromUint64(1000000))
 	}).AnyTimes()
 	stakingKeeper.EXPECT().BondDenom(ctx).Return("ugd").AnyTimes()
 	stakingKeeper.EXPECT().IterateBondedValidatorsByPower(gomock.Any(), gomock.Any()).AnyTimes()
 	stakingKeeper.EXPECT().IterateDelegations(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(sdkmath.NewInt(10000000)).AnyTimes()
+	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(math.NewInt(10000000)).AnyTimes()
 
 	params := Params{
 		MintDenom:              "ugd",
-		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
-		GoalBonded:             sdk.NewDecWithPrec(67, 2),
+		SubsidyHalvingInterval: math.LegacyNewDecWithPrec(50000, 0),
+		GoalBonded:             math.LegacyNewDecWithPrec(67, 2),
 		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
 	}
 
@@ -323,8 +323,8 @@ func TestAddressConvertion(t *testing.T) {
 		{"unigrid1pk2sxhrywmxsqtnas3p7gu0t8x43rlvy4jatsg", 1236, "165"},
 	}
 
-	key := sdk.NewKVStoreKey(ModuleName)
-	testCtx := testutil.DefaultContextWithDB(t, key, sdk.NewTransientStoreKey("transient_test"))
+	key := storetypes.NewKVStoreKey(ModuleName)
+	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithBlockHeader(types.Header{ChainID: "unigrid", Time: time.Now()})
 	fmt.Println(ctx.BlockHeader().ChainID)
 	//fmt.Println(ctx.BlockHeader())
@@ -336,13 +336,13 @@ func TestAddressConvertion(t *testing.T) {
 	acctKeeper.EXPECT().GetModuleAddress(ModuleName).Return(mintAcct).AnyTimes()
 	acctKeeper.EXPECT().GetModuleAccount(gomock.Any(), ModuleName).Return(authtypes.NewEmptyModuleAccount(ModuleName)).AnyTimes()
 	//trackMockBalances(bankKeeper)
-	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) sdkmath.Int {
-		return sdk.TokensFromConsensusPower(power, sdkmath.NewIntFromUint64(1000000))
+	stakingKeeper.EXPECT().TokensFromConsensusPower(ctx, gomock.Any()).DoAndReturn(func(ctx sdk.Context, power int64) math.Int {
+		return sdk.TokensFromConsensusPower(power, math.NewIntFromUint64(1000000))
 	}).AnyTimes()
 	stakingKeeper.EXPECT().BondDenom(ctx).Return("ugd").AnyTimes()
 	stakingKeeper.EXPECT().IterateBondedValidatorsByPower(gomock.Any(), gomock.Any()).AnyTimes()
 	stakingKeeper.EXPECT().IterateDelegations(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(sdkmath.NewInt(10000000)).AnyTimes()
+	stakingKeeper.EXPECT().TotalBondedTokens(gomock.Any()).Return(math.NewInt(10000000)).AnyTimes()
 
 	add, err := ConvertStringToAcc(compareValue[0].Address)
 

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -98,7 +100,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
 			// Convert the BaseAccount to a DelayedVestingAccount
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
-			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
+			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
 			//fmt.Println("Vesting Account:", vestingAcc)
 			// Set this new account in the keeper
 			k.SetAccount(ctx, vestingAcc)
@@ -106,7 +108,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
 			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
-			vestingAcc := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
+			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
 		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
@@ -116,7 +118,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			// Calculate the amount for each vesting period for each coin in currentBalances
 			amountPerPeriod := sdk.Coins{}
 			for _, coin := range currentBalances {
-				amount := coin.Amount.Quo(sdk.NewInt(10))
+				amount := coin.Amount.Quo(math.NewInt(10))
 				amountPerPeriod = append(amountPerPeriod, sdk.NewCoin(coin.Denom, amount))
 			}
 
@@ -138,7 +140,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 			}
 
 			// Create the PeriodicVestingAccount
-			vestingAcc := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
+			vestingAcc, _ := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
 			k.SetAccount(ctx, vestingAcc)
 		} //else if baseAcc, ok := account.(*vestingtypes.PeriodicVestingAccount); ok {
 		//}

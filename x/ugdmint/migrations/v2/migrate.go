@@ -1,6 +1,8 @@
 package v2
 
 import (
+	"cosmossdk.io/store"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/exported"
@@ -19,7 +21,7 @@ var ParamsKey = []byte{0x01}
 // module state.
 func Migrate(
 	ctx sdk.Context,
-	store sdk.KVStore,
+	store store.KVStore,
 	legacySubspace exported.Subspace,
 	cdc codec.BinaryCodec,
 ) error {

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	math "math"
+	"math"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	cosmosmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/viper"
 	"github.com/unigrid-project/cosmos-sdk-common/common/httpclient"
@@ -146,7 +147,7 @@ func (mc *MintCache) checkCache(height uint64) (mint Mint) {
 }
 
 func ConvertIntToCoin(params Params, amount int) sdk.Coins {
-	return sdk.NewCoins(sdk.NewCoin(params.MintDenom, sdk.NewInt(int64(amount))))
+	return sdk.NewCoins(sdk.NewCoin(params.MintDenom, cosmosmath.NewInt(int64(amount))))
 }
 
 func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
@@ -222,14 +223,14 @@ func (mc *MintCache) callHedgehog(serverUrl string) {
 }
 
 // NewMinter returns a new Minter object with the given subsidy halving interval.
-func NewMinter(subsidyHalvingInterval sdk.Dec) Minter {
+func NewMinter(subsidyHalvingInterval cosmosmath.LegacyDec) Minter {
 	return Minter{
 		SubsidyHalvingInterval: subsidyHalvingInterval,
 	}
 }
 
 // InitialMinter returns an initial Minter object with a given inflation value.
-func InitialMinter(subsidyHalvingInterval sdk.Dec) Minter {
+func InitialMinter(subsidyHalvingInterval cosmosmath.LegacyDec) Minter {
 	return NewMinter(
 		subsidyHalvingInterval,
 	)
@@ -239,7 +240,7 @@ func InitialMinter(subsidyHalvingInterval sdk.Dec) Minter {
 // which uses a subsidy halving interval of 13%.
 func DefaultInitialMinter() Minter {
 	return InitialMinter(
-		sdk.NewDecWithPrec(13, 2),
+		cosmosmath.LegacyNewDecWithPrec(13, 2),
 	)
 }
 
@@ -294,7 +295,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	// Convert to coin with the adjusted subsidy
 	subsidyInSmallestUnit := int64(nSubsidy * math.Pow10(8))
-	coin := sdk.NewCoin(params.MintDenom, sdk.NewInt(subsidyInSmallestUnit))
+	coin := sdk.NewCoin(params.MintDenom, cosmosmath.NewInt(subsidyInSmallestUnit))
 	fmt.Printf("[BlockProvision] Coin generated: %s\n", coin.String())
 
 	return sdk.NewCoins(coin)
