@@ -8,6 +8,7 @@ import (
 	"math/rand"
 
 	"cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
@@ -19,29 +20,34 @@ const (
 	GoalBonded             = "goal_bonded"
 )
 
+var (
+	KeySubsidyHalvingInterval = []byte("SubsidyHalvingInterval")
+	KeyGoalBonded             = []byte("GoalBonded")
+)
+
 // GenSubsidyHalvingInterval randomized subsidy halving interval
 func GenSubsidyHalvingInterval(r *rand.Rand) math.LegacyDec {
-	return sdk.NewDecWithPrec(int64(r.Intn(99)), 0)
+	return math.LegacyNewDecWithPrec(int64(r.Intn(99)), 0)
 }
 
 // GenGoalBonded randomized GoalBonded
 func GenGoalBonded(r *rand.Rand) math.LegacyDec {
-	return sdk.NewDecWithPrec(67, 2)
+	return math.LegacyNewDecWithPrec(67, 2)
 }
 
 // RandomizedGenState generates a random GenesisState for mint
 func RandomizedGenState(simState *module.SimulationState) {
 	// minter
-	var subsidyHalvingInterval sdk.Dec
+	var subsidyHalvingInterval math.LegacyDec
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, SubsidyHalvingInterval, &subsidyHalvingInterval, simState.Rand,
+		string(KeySubsidyHalvingInterval), &subsidyHalvingInterval, simState.Rand,
 		func(r *rand.Rand) { subsidyHalvingInterval = GenSubsidyHalvingInterval(r) },
 	)
 
 	// params
-	var goalBonded sdk.Dec
+	var goalBonded math.LegacyDec
 	simState.AppParams.GetOrGenerate(
-		simState.Cdc, GoalBonded, &goalBonded, simState.Rand,
+		string(KeyGoalBonded), &goalBonded, simState.Rand,
 		func(r *rand.Rand) { goalBonded = GenGoalBonded(r) },
 	)
 

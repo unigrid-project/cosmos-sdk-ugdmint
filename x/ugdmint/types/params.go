@@ -13,7 +13,7 @@ import (
 
 // NewParams creates a new Params instance
 func NewParams(
-	mintDenom string, subsidyHalvingInterval, goalBonded sdk.Dec, blocksPerYear uint64,
+	mintDenom string, subsidyHalvingInterval, goalBonded math.LegacyDec, blocksPerYear uint64,
 ) Params {
 	return Params{
 		MintDenom:              mintDenom,
@@ -27,8 +27,8 @@ func NewParams(
 func DefaultParams() Params {
 	return Params{
 		MintDenom:              "ugd",
-		SubsidyHalvingInterval: sdk.NewDecWithPrec(50000, 0),
-		GoalBonded:             sdk.NewDecWithPrec(67, 2),
+		SubsidyHalvingInterval: math.LegacyNewDecWithPrec(50000, 0),
+		GoalBonded:             math.LegacyNewDecWithPrec(67, 2),
 		BlocksPerYear:          uint64(60 * 60 * 8766 / 5),
 	}
 }
@@ -73,7 +73,7 @@ func validateMintDenom(i interface{}) error {
 }
 
 func validateSubsidyHalvingInterval(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -89,7 +89,7 @@ func validateSubsidyHalvingInterval(i interface{}) error {
 }
 
 func validateGoalBonded(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
