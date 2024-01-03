@@ -5,8 +5,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/exported"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/exported"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
 const (

@@ -7,7 +7,7 @@ This module is designed to work with Cosmos-SDK v0.47.x.
 ### Private module
 Since this module is currently in a private Github repo, first make sure that you have access permissions.  It's easiest to set the `$GOPRIVATE` environment variable to tell `go mod install` to install it from a private repo.  Otherwise it will look at the online public registry of modules and complain that it cannot find it.
 <pre>
-> export GOPRIVATE="github.com/unigrid-project/cosmos-sdk-ugdmint"
+> export GOPRIVATE="github.com/unigrid-project/cosmos-ugdmint"
 </pre>
 
 ### Files
@@ -42,7 +42,7 @@ import (
 <pre>
 import (
     ...
-    mintmodulev1 "<b><i>github.com/unigrid-project/cosmos-sdk-ugdmint/api/cosmos/ugdmint</i></b>/module/v1"
+    mintmodulev1 "<b><i>github.com/unigrid-project/cosmos-ugdmint/api/cosmos/ugdmint</i></b>/module/v1"
     <b><i>mintmodule</i></b> "github.com/<b><i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>"
     mintkeeper "github.com/<b></i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>/keeper"
     minttypes "github.com/<b><i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>/types"

@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/kv"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
 // NewDecodeStore returns a decoder function closure that unmarshals the KVPair's

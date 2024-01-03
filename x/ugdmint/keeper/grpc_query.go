@@ -4,7 +4,7 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
