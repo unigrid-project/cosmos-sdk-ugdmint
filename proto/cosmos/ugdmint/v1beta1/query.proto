@@ -37,7 +37,7 @@ message QuerySubsidyHalvingIntervalRequest {}
 message QuerySubsidyHalvingIntervalResponse {
   // subsidy halving interval value.
   bytes subsidy_halving_interval = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
