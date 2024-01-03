@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/address"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
 // Simulation operation weights constants

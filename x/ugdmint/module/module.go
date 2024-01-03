@@ -23,12 +23,12 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
-	modulev1 "github.com/unigrid-project/cosmos-sdk-ugdmint/api/cosmos/ugdmint/module/v1"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/client/cli"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/exported"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/keeper"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/simulation"
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	modulev1 "github.com/unigrid-project/cosmos-ugdmint/api/cosmos/ugdmint/module/v1"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/client/cli"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/exported"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/keeper"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/simulation"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
 // ConsensusVersion defines the current x/ugdmint module consensus version.

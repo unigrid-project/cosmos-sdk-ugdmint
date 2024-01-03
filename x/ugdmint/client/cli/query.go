@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/types"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

@@ -27,6 +27,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Minter represents the minting state.
+
 type Minter struct {
 	// current subsidy halving interval
 	SubsidyHalvingInterval github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=subsidy_halving_interval,json=subsidyHalvingInterval,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"subsidy_halving_interval"`

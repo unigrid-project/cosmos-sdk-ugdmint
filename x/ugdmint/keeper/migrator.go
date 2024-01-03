@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/unigrid-project/cosmos-sdk-ugdmint/x/ugdmint/exported"
+	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/exported"
 )
 
 // Migrator is a struct for handling in-place state migrations.
