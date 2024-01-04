@@ -146,7 +146,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dgryski/go-farm v0.0.0-20200201041132-a6ae2369ad13 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
+	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-kit/kit v0.12.0 // indirect
@@ -201,7 +201,7 @@ require (
 	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
-	golang.org/x/crypto v0.16.0 // indirect
+	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
