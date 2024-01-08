@@ -13,7 +13,7 @@ import (
 	cosmosmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/viper"
-	"github.com/unigrid-project/cosmos-sdk-common/common/httpclient"
+	"github.com/unigrid-project/cosmos-common/common/httpclient"
 )
 
 type Mint struct {
