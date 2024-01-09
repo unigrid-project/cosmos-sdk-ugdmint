@@ -36,7 +36,7 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	minter := k.GetMinter(ctx)
 	params := k.GetParams(ctx)
 	height := uint64(ctx.BlockHeight())
-	bondedRatio := k.BondedRatio(ctx)
+	bondedRatio, _ := k.BondedRatio(ctx)
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
