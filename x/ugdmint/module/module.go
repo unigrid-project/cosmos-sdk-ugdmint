@@ -15,6 +15,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	// this line is used by starport scaffolding # 1
@@ -189,7 +190,7 @@ type MintInputs struct {
 
 	AccountKeeper types.AccountKeeper
 	BankKeeper    types.BankKeeper
-	StakingKeeper types.StakingKeeper
+	StakingKeeper *stakingkeeper.Keeper
 }
 
 //nolint:revive
@@ -215,7 +216,7 @@ func ProvideModule(in MintInputs) MintOutputs {
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.Key,
-		in.StakingKeeper,
+		*in.StakingKeeper,
 		in.AccountKeeper,
 		in.BankKeeper,
 		feeCollectorName,
