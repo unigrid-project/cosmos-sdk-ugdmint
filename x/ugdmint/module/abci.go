@@ -2,6 +2,7 @@ package ugdmint
 
 import (
 	"context"
+
 	"fmt"
 	"time"
 
@@ -38,10 +39,12 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	minter := k.GetMinter(ctx)
 	params := k.GetParams(ctx)
 	height := uint64(ctx.BlockHeight())
+
 	bondedRatio, err := k.BondedRatio(ctx)
 	if err != nil {
 		fmt.Println("error getting bonded ratio")
 	}
+
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
@@ -55,9 +58,11 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	if !ok {
 		_, mintedCoin = mintedCoins.Find("fermi")
 	}
+
 	err2 := k.MintCoins(ctx, mintedCoins)
 	if err2 != nil {
 		panic(err2)
+
 	}
 
 	// send the minted coins to the fee collector account

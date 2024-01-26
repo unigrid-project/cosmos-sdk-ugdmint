@@ -35,6 +35,7 @@ func NewKeeper(
 	//key storetypes.StoreKey,
 	storeService store.KVStoreService,
 	sk types.StakingKeeper,
+
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	feeCollectorName string,
