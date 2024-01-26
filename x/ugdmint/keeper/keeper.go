@@ -1,11 +1,14 @@
 package keeper
 
 import (
+	"context"
+
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	storetypes "cosmossdk.io/store/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
@@ -13,8 +16,9 @@ import (
 
 type (
 	Keeper struct {
-		cdc              codec.BinaryCodec
-		storeKey         storetypes.StoreKey
+		cdc codec.BinaryCodec
+		// storeKey         storetypes.StoreKey
+		storeService     store.KVStoreService
 		stakingKeeper    types.StakingKeeper
 		bankKeeper       types.BankKeeper
 		feeCollectorName string
@@ -28,7 +32,8 @@ type (
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
-	key storetypes.StoreKey,
+	//key storetypes.StoreKey,
+	storeService store.KVStoreService,
 	sk types.StakingKeeper,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
@@ -41,8 +46,9 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:              cdc,
-		storeKey:         key,
+		cdc: cdc,
+		//storeKey:         key,
+		storeService:     storeService,
 		stakingKeeper:    sk,
 		bankKeeper:       bk,
 		feeCollectorName: feeCollectorName,
@@ -73,7 +79,8 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 
 // get the minter
 func (k Keeper) GetMinter(ctx sdk.Context) (minter types.Minter) {
-	store := ctx.KVStore(k.storeKey)
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	//store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.MinterKey)
 	if b == nil {
 		panic("stored minter should not have been nil")
@@ -85,26 +92,27 @@ func (k Keeper) GetMinter(ctx sdk.Context) (minter types.Minter) {
 
 // set the minter
 func (k Keeper) SetMinter(ctx sdk.Context, minter types.Minter) {
-	store := ctx.KVStore(k.storeKey)
+	//store := ctx.KVStore(k.storeKey)
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	b := k.cdc.MustMarshal(&minter)
 	store.Set(types.MinterKey, b)
 }
 
 // StakingTokenSupply implements an alias call to the underlying staking keeper's
 // StakingTokenSupply to be used in BeginBlocker.
-func (k Keeper) StakingTokenSupply(ctx sdk.Context) math.Int {
-	return k.stakingKeeper.StakingTokenSupply(ctx)
-}
+// func (k Keeper) StakingTokenSupply(ctx sdk.Context) math.Int {
+// 	return k.stakingKeeper.StakingTokenSupply(ctx)
+// }
 
 // BondedRatio implements an alias call to the underlying staking keeper's
 // BondedRatio to be used in BeginBlocker.
-func (k Keeper) BondedRatio(ctx sdk.Context) math.LegacyDec {
+func (k Keeper) BondedRatio(ctx context.Context) (math.LegacyDec, error) {
 	return k.stakingKeeper.BondedRatio(ctx)
 }
 
 // MintCoins implements an alias call to the underlying supply keeper's
 // MintCoins to be used in BeginBlocker.
-func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
+func (k Keeper) MintCoins(ctx context.Context, newCoins sdk.Coins) error {
 	if newCoins.Empty() {
 		// skip as no coins need to be minted
 		return nil

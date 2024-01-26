@@ -2,15 +2,12 @@ package ugdmint
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
 
 	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
-	storetypes "cosmossdk.io/store/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -38,8 +35,6 @@ var (
 	_ module.AppModuleBasic      = (*AppModule)(nil)
 	_ module.AppModuleSimulation = (*AppModule)(nil)
 )
-
-var httpClient *http.Client
 
 // ----------------------------------------------------------------------------
 // AppModuleBasic
@@ -174,7 +169,7 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // BeginBlock contains the logic that is automatically triggered at the beginning of each block
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	BeginBlocker(ctx, am.keeper)
+	//BeginBlocker(ctx, am.keeper)
 	return nil
 }
 
@@ -208,24 +203,16 @@ func init() {
 	appmodule.Register(&modulev1.Module{},
 		appmodule.Provide(ProvideModule),
 	)
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // Adjust as necessary
-	}
-	httpClient = &http.Client{
-		Transport: tr,
-		Timeout:   10 * time.Second, // Example timeout
-	}
-
-	closeIdleConnectionsPeriodically()
 }
 
 //nolint:revive
 type MintInputs struct {
 	depinject.In
 
-	ModuleKey              depinject.OwnModuleKey
-	Config                 *modulev1.Module
-	Key                    *storetypes.KVStoreKey
+	StoreService store.KVStoreService
+	ModuleKey    depinject.OwnModuleKey
+	Config       *modulev1.Module
+	//Key                    *storetypes.KVStoreKey
 	Cdc                    codec.Codec
 	InflationCalculationFn types.InflationCalculationFn `optional:"true"`
 
@@ -259,7 +246,8 @@ func ProvideModule(in MintInputs) MintOutputs {
 
 	k := keeper.NewKeeper(
 		in.Cdc,
-		in.Key,
+		//in.Key,
+		in.StoreService,
 		in.StakingKeeper,
 		in.AccountKeeper,
 		in.BankKeeper,
@@ -271,15 +259,4 @@ func ProvideModule(in MintInputs) MintOutputs {
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper, in.InflationCalculationFn, in.LegacySubspace)
 
 	return MintOutputs{MintKeeper: k, Module: m}
-}
-
-func closeIdleConnectionsPeriodically() {
-	ticker := time.NewTicker(1 * time.Minute)
-	go func() {
-		for range ticker.C {
-			if tr, ok := httpClient.Transport.(*http.Transport); ok {
-				tr.CloseIdleConnections()
-			}
-		}
-	}()
 }

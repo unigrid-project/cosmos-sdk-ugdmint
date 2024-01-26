@@ -12,8 +12,8 @@ func (keeper Keeper) InitGenesis(ctx sdk.Context, ak types.AccountKeeper, data *
 	if err := keeper.SetParams(ctx, data.Params); err != nil {
 		panic(err)
 	}
-
-	ak.GetModuleAccount(ctx, types.ModuleName)
+	goCtx := sdk.UnwrapSDKContext(ctx)
+	ak.GetModuleAccount(goCtx, types.ModuleName)
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
