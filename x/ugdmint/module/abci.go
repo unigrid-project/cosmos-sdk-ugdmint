@@ -34,7 +34,7 @@ type StatusResponse struct {
 func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-	fmt.Println("BeginBlocker in MintModule")
+	//fmt.Println("BeginBlocker in MintModule")
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
 	params := k.GetParams(ctx)
@@ -44,7 +44,6 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	if err != nil {
 		fmt.Println("error getting bonded ratio")
 	}
-
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)

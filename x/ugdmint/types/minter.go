@@ -256,21 +256,21 @@ func ValidateMinter(minter Minter) error {
 // BlockProvision returns the provisions for a block based on the UGD algorithm
 // provisions rate.
 func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, prevCtx sdk.Context) sdk.Coins {
-	fmt.Printf("[BlockProvision] Called: height=%d\n", height)
-	fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
+	// fmt.Printf("[BlockProvision] Called: height=%d\n", height)
+	// fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
 	// Calculate the number of blocks per minute dynamically
 	//blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
 	blocksPerMinute := 12
-	fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
+	//fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
 
 	var nSubsidy float64 = 1
-	fmt.Printf("[BlockProvision] Initial nSubsidy: %f\n", nSubsidy)
+	//fmt.Printf("[BlockProvision] Initial nSubsidy: %f\n", nSubsidy)
 
 	adjustedHeight := height + 2685066
-	fmt.Printf("[BlockProvision] Adjusted Height: %d\n", adjustedHeight)
+	//fmt.Printf("[BlockProvision] Adjusted Height: %d\n", adjustedHeight)
 
 	nBehalf := int64(adjustedHeight-1000000) / params.SubsidyHalvingInterval.Abs().TruncateInt64()
-	fmt.Printf("[BlockProvision] nBehalf: %d\n", nBehalf)
+	//fmt.Printf("[BlockProvision] nBehalf: %d\n", nBehalf)
 
 	for i := 0; i < int(nBehalf); i++ {
 		nSubsidy = nSubsidy * 99.0 / 100.0
@@ -279,10 +279,10 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 
 	if ctx.BlockTime().Unix() <= prevCtx.BlockTime().Unix() {
 		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-(ctx.BlockTime().Unix()-60)) / 60.0)
-		fmt.Printf("[BlockProvision] nSubsidy adjusted for block time <= prev block time: %f\n", nSubsidy)
+		//fmt.Printf("[BlockProvision] nSubsidy adjusted for block time <= prev block time: %f\n", nSubsidy)
 	} else {
 		nSubsidy = nSubsidy * (float64(ctx.BlockTime().Unix()-prevCtx.BlockTime().Unix()) / 60.0)
-		fmt.Printf("[BlockProvision] nSubsidy adjusted for block time > prev block time: %f\n", nSubsidy)
+		//fmt.Printf("[BlockProvision] nSubsidy adjusted for block time > prev block time: %f\n", nSubsidy)
 	}
 
 	// Adjust nSubsidy based on the actual blocks per minute
@@ -296,7 +296,7 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	// Convert to coin with the adjusted subsidy
 	subsidyInSmallestUnit := int64(nSubsidy * math.Pow10(8))
 	coin := sdk.NewCoin(params.MintDenom, cosmosmath.NewInt(subsidyInSmallestUnit))
-	fmt.Printf("[BlockProvision] Coin generated: %s\n", coin.String())
+	//fmt.Printf("[BlockProvision] Coin generated: %s\n", coin.String())
 
 	return sdk.NewCoins(coin)
 }
