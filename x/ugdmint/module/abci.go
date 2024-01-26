@@ -1,6 +1,8 @@
 package ugdmint
 
 import (
+	"context"
+
 	"fmt"
 	"time"
 
@@ -29,14 +31,20 @@ type StatusResponse struct {
 }
 
 // BeginBlocker mints new tokens for the previous block.
-func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
+func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-
+	fmt.Println("BeginBlocker in MintModule")
 	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
 	params := k.GetParams(ctx)
 	height := uint64(ctx.BlockHeight())
-	bondedRatio, _ := k.BondedRatio(ctx)
+
+	bondedRatio, err := k.BondedRatio(ctx)
+	if err != nil {
+		fmt.Println("error getting bonded ratio")
+	}
+
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(ctx, minter)
@@ -50,9 +58,11 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper) {
 	if !ok {
 		_, mintedCoin = mintedCoins.Find("fermi")
 	}
-	err := k.MintCoins(ctx, mintedCoins)
-	if err != nil {
-		panic(err)
+
+	err2 := k.MintCoins(ctx, mintedCoins)
+	if err2 != nil {
+		panic(err2)
+
 	}
 
 	// send the minted coins to the fee collector account

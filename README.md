@@ -1,4 +1,4 @@
-# cosmos-sdk-ugdmint
+# cosmos-ugdmint
 Unigrid mint module intended to replace standard Mint module for Unigrid Cosmos-SDK chains.  UGDMint implements the Unigrid algorithm for staking rewards instead of the standard algorithm for Cosmos-SDK chains based on inflation and bonded ratio.
 
 ## Installation
@@ -43,9 +43,9 @@ import (
 import (
     ...
     mintmodulev1 "<b><i>github.com/unigrid-project/cosmos-ugdmint/api/cosmos/ugdmint</i></b>/module/v1"
-    <b><i>mintmodule</i></b> "github.com/<b><i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>"
-    mintkeeper "github.com/<b></i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>/keeper"
-    minttypes "github.com/<b><i>unigrid-project/cosmos-sdk-ugdmint/x/ugdmint</i></b>/types"
+    <b><i>mintmodule</i></b> "github.com/<b><i>unigrid-project/cosmos-ugdmint/x/ugdmint</i></b>"
+    mintkeeper "github.com/<b></i>unigrid-project/cosmos-ugdmint/x/ugdmint</i></b>/keeper"
+    minttypes "github.com/<b><i>unigrid-project/cosmos-ugdmint/x/ugdmint</i></b>/types"
     ...
 )
 </pre>
