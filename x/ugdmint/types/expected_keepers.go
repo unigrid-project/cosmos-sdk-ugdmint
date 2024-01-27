@@ -25,6 +25,8 @@ type AccountKeeper interface {
 	// Add these methods
 	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
 	SetAccount(ctx context.Context, acc sdk.AccountI)
+	// Fetch the next account number, and increment the internal counter.
+	NextAccountNumber(context.Context) uint64
 }
 
 // BankKeeper defines the expected interface needed to retrieve account balances.

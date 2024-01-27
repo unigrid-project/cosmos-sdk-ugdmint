@@ -157,68 +157,67 @@ func ConvertStringToAcc(address string) (sdk.AccAddress, error) {
 }
 
 func (mc *MintCache) callHedgehog(serverUrl string) {
+	fmt.Println("callHedgehog: Sending request to hedgehog server:", serverUrl)
 
 	response, err := httpclient.Client.Get(serverUrl)
-
 	if err != nil {
-		if err == io.EOF {
-			fmt.Println("Received empty response from hedgehog server.")
-		} else {
-			fmt.Println("Error accessing hedgehog:", err.Error())
-		}
+		fmt.Printf("callHedgehog: Error accessing hedgehog server: %s\n", err.Error())
 		return
 	}
-
 	defer response.Body.Close()
 
 	// Check if the response is empty
 	if response.ContentLength == 0 {
-		fmt.Println("Received empty response from hedgehog server.")
+		fmt.Println("callHedgehog: Received empty response from hedgehog server.")
 		return
 	}
 
 	var res HedgehogData
 	body, err1 := io.ReadAll(response.Body)
-
 	if err1 != nil {
-		fmt.Println(err1.Error())
-		//report response error in log
+		fmt.Printf("callHedgehog: Error reading response body: %s\n", err1.Error())
 		return
 	}
 
-	e := json.Unmarshal(body, &res)
-	//e := json.NewDecoder(response.Body).Decode(res)
-
-	if e != nil {
-		fmt.Println(e.Error())
-		//report response error in log
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		fmt.Printf("callHedgehog: Error unmarshaling response: %s\n", err.Error())
 		return
 	}
 
-	blockHeight := sdk.Context.BlockHeight(sdk.Context{})
+	// Log the received data
+	fmt.Printf("callHedgehog: Received data: Timestamp: %s, PreviousTimeStamp: %s, Flags: %d, Type: %s\n",
+		res.Timestamp, res.PreviousTimeStamp, res.Flags, res.Hedgehogtype)
 
+	// Process and update cache
+	// Convert blockHeight to uint64 for comparison
+	blockHeight := uint64(sdk.Context.BlockHeight(sdk.Context{}))
 	for key, amount := range res.Data.Mints {
 		arr := strings.Split(key, "/")
-		a := arr[0]
-		height := arr[1]
-		h, er := strconv.ParseInt(height, 10, 64)
-
-		if er != nil {
-			fmt.Println("Error parsing height:", er.Error())
+		address := arr[0]
+		heightStr := arr[1]
+		height, err := strconv.ParseUint(heightStr, 10, 64)
+		if err != nil {
+			fmt.Printf("callHedgehog: Error parsing height '%s': %s\n", heightStr, err.Error())
 			continue // Skip this iteration and move to the next one
 		}
 
-		if h >= blockHeight && strings.Contains(a, "unigrid") {
-			uh := uint64(h)
-			mc.mints[uh] = Mint{
-				Address: a,
-				height:  height,
+		if height >= blockHeight {
+			mc.updateCache(height, Mint{
+				Address: address,
 				Amount:  amount,
-			}
+				height:  heightStr,
+			})
+
+			// Log each mint being processed
+			fmt.Printf("callHedgehog: Processed mint for height %d: Address: %s, Amount: %d\n", height, address, amount)
 		}
 	}
-	for _, m := range mc.mints {
-		fmt.Println(m)
+
+	// Additional logging to show current state of cache
+	fmt.Println("callHedgehog: Current state of cache:")
+	for h, mint := range mc.mints {
+		fmt.Printf("Height: %d, Mint: %+v\n", h, mint)
 	}
 }
 
@@ -260,7 +259,8 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	// fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
 	// Calculate the number of blocks per minute dynamically
 	//blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
-	blocksPerMinute := 12
+	//blocksPerMinute := 12
+	blocksPerMinute := 60
 	//fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
 
 	var nSubsidy float64 = 1

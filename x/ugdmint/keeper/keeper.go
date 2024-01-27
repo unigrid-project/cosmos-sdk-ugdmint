@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types"
 )
 
@@ -79,7 +78,7 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // get the minter
-func (k Keeper) GetMinter(ctx sdk.Context) (minter types.Minter) {
+func (k Keeper) GetMinter(ctx context.Context) (minter types.Minter) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	//store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.MinterKey)
@@ -92,7 +91,7 @@ func (k Keeper) GetMinter(ctx sdk.Context) (minter types.Minter) {
 }
 
 // set the minter
-func (k Keeper) SetMinter(ctx sdk.Context, minter types.Minter) {
+func (k Keeper) SetMinter(ctx context.Context, minter types.Minter) {
 	//store := ctx.KVStore(k.storeKey)
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	b := k.cdc.MustMarshal(&minter)
@@ -133,14 +132,21 @@ func (k Keeper) AddNewMint(ctx sdk.Context, coins sdk.Coins, reciver sdk.AccAddr
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, reciver, coins)
 }
 
-func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI {
+func (k Keeper) GetAccount(ctx sdk.Context, addr sdk.AccAddress) sdk.AccountI {
 	return k.authKeeper.GetAccount(ctx, addr)
 }
 
-func (k Keeper) SetAccount(ctx sdk.Context, acc authtypes.AccountI) {
+func (k Keeper) SetAccount(ctx sdk.Context, acc sdk.AccountI) error {
 	k.authKeeper.SetAccount(ctx, acc)
+	return nil
 }
 
 func (k Keeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
 	return k.bankKeeper.GetAllBalances(ctx, addr)
+}
+
+func (k Keeper) GetNextAccountNumber(ctx context.Context) (uint64, error) {
+	// Use the authKeeper to get the next account number.
+	// This assumes that the authKeeper has a NextAccountNumber method.
+	return k.authKeeper.NextAccountNumber(ctx), nil
 }
