@@ -259,8 +259,8 @@ func (m Minter) BlockProvision(params Params, height uint64, ctx sdk.Context, pr
 	// fmt.Printf("[BlockProvision] Current Block Time: %d, Previous Block Time: %d\n", ctx.BlockTime().Unix(), prevCtx.BlockTime().Unix())
 	// Calculate the number of blocks per minute dynamically
 	//blocksPerMinute := calculateBlocksPerMinute(ctx, prevCtx)
-	//blocksPerMinute := 12
-	blocksPerMinute := 60
+	blocksPerMinute := 12
+	//blocksPerMinute := 60
 	//fmt.Printf("[BlockProvision] blocksPerMinute=%d\n", blocksPerMinute)
 
 	var nSubsidy float64 = 1
