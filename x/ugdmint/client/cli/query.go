@@ -25,6 +25,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(
 		CmdQueryParams(),
 		cmdQuerySubsidyHalvingInterval(),
+		cmdQueryMints(),
 	)
 	// this line is used by starport scaffolding # 1
 
