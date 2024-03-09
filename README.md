@@ -2,7 +2,7 @@
 Unigrid mint module intended to replace standard Mint module for Unigrid Cosmos-SDK chains.  UGDMint implements the Unigrid algorithm for staking rewards instead of the standard algorithm for Cosmos-SDK chains based on inflation and bonded ratio.
 
 ## Installation
-This module is designed to work with Cosmos-SDK v0.47.x.  
+This module is designed to work with Cosmos-SDK v0.50.x.  
 
 ### Private module
 Since this module is currently in a private Github repo, first make sure that you have access permissions.  It's easiest to set the `$GOPRIVATE` environment variable to tell `go mod install` to install it from a private repo.  Otherwise it will look at the online public registry of modules and complain that it cannot find it.
@@ -88,18 +88,3 @@ One change in the code here:
     )
 </pre>
 
-## Build
-After the above changes are made in `/simapp` for your Cosmos-SDK 0.47.x environment, go to the project base folder and run:
-``` shell
-$ make build
-```
-It should run a `go mod tidy` before the build that will pull this module down before building.
-
-## Run
-Follow the specific documentation for your cosmos chain to setup and run your chain.  If it is base cosmos-sdk, that documentation is found at:
-
-- [Running a Node](https://docs.cosmos.network/v0.47/run-node/run-node)
-
-## Learn more
-
-- [Cosmos SDK docs](https://docs.cosmos.network/v0.47)

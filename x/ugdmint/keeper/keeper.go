@@ -2,10 +2,12 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -80,7 +82,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 // get the minter
 func (k Keeper) GetMinter(ctx context.Context) (minter types.Minter) {
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-	//store := ctx.KVStore(k.storeKey)
 	b := store.Get(types.MinterKey)
 	if b == nil {
 		panic("stored minter should not have been nil")
@@ -92,7 +93,7 @@ func (k Keeper) GetMinter(ctx context.Context) (minter types.Minter) {
 
 // set the minter
 func (k Keeper) SetMinter(ctx context.Context, minter types.Minter) {
-	//store := ctx.KVStore(k.storeKey)
+
 	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
 	b := k.cdc.MustMarshal(&minter)
 	store.Set(types.MinterKey, b)
@@ -149,4 +150,25 @@ func (k Keeper) GetNextAccountNumber(ctx context.Context) (uint64, error) {
 	// Use the authKeeper to get the next account number.
 	// This assumes that the authKeeper has a NextAccountNumber method.
 	return k.authKeeper.NextAccountNumber(ctx), nil
+}
+
+func (k Keeper) SetMintRecord(ctx sdk.Context, record types.MintRecord) error {
+	store := prefix.NewStore(runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx)), []byte("MintRecordPrefix"))
+	key := []byte(fmt.Sprintf("mintRecord:%d", record.BlockHeight))
+	value := k.cdc.MustMarshal(&record)
+	store.Set(key, value)
+	return nil
+}
+
+func (k Keeper) GetMintRecord(ctx sdk.Context, blockHeight int64) (types.MintRecord, bool) {
+	store := prefix.NewStore(runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx)), []byte("MintRecordPrefix"))
+	key := []byte(fmt.Sprintf("mintRecord:%d", blockHeight))
+	value := store.Get(key)
+	if value == nil {
+		return types.MintRecord{}, false
+	}
+
+	var record types.MintRecord
+	k.cdc.MustUnmarshal(value, &record)
+	return record, true
 }

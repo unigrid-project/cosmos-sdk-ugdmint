@@ -5,7 +5,7 @@ import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "github.com/cosmos/cosmos-sdk/x/ugdmint/types";
+option go_package = "github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types";
 
 // Minter represents the minting state.
 message Minter {

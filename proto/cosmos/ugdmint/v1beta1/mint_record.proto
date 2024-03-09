@@ -1,0 +1,21 @@
+// mint_record.proto
+syntax = "proto3";
+package cosmos.ugdmint.v1beta1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types";
+
+// MintRecord represents a record of minting activity
+message MintRecord {
+  int64 block_height = 1;              // Block height at which minting occurred
+  string account = 2;                  // Account to which coins were minted
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (amino.dont_omitempty)   = true,
+    (amino.encoding)         = "legacy_coins"
+  ];
+}

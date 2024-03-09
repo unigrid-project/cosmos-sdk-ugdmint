@@ -5,8 +5,9 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/ugdmint/v1beta1/params.proto";
 import "amino/amino.proto";
+import "cosmos/ugdmint/v1beta1/mint_record.proto";
 
-option go_package = "github.com/cosmos/cosmos-sdk/x/ugdmint/types";
+option go_package = "github.com/unigrid-project/cosmos-ugdmint/x/ugdmint/types";
 
 // Query defines the gRPC querier service.
 service Query {
@@ -19,6 +20,12 @@ service Query {
   rpc SubsidyHalvingInterval(QuerySubsidyHalvingIntervalRequest) returns (QuerySubsidyHalvingIntervalResponse) {
     option (google.api.http).get = "/cosmos/ugdmint/v1beta1/subsidy_halving_interval";
   }
+
+  // AllMintRecords queries all mint records stored by the module.
+  rpc AllMintRecords(QueryAllMintRecordsRequest) returns (QueryAllMintRecordsResponse) {
+    option (google.api.http).get = "/cosmos/ugdmint/v1beta1/mint_records";
+  }
+
 }
 
 // QueryParamsRequest is request type for the Query/Params RPC method.
@@ -41,4 +48,14 @@ message QuerySubsidyHalvingIntervalResponse {
     (gogoproto.nullable)   = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+// QueryAllMintRecordsRequest is request type for the Query/AllMintRecords RPC method.
+message QueryAllMintRecordsRequest {
+  // You can add pagination fields here if desired
+}
+
+// QueryAllMintRecordsResponse is response type for the Query/AllMintRecords RPC method.
+message QueryAllMintRecordsResponse {
+  repeated MintRecord mint_records = 1 [(gogoproto.nullable) = false];
 }

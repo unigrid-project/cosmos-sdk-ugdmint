@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Query_Params_FullMethodName                 = "/cosmos.ugdmint.v1beta1.Query/Params"
 	Query_SubsidyHalvingInterval_FullMethodName = "/cosmos.ugdmint.v1beta1.Query/SubsidyHalvingInterval"
+	Query_AllMintRecords_FullMethodName         = "/cosmos.ugdmint.v1beta1.Query/AllMintRecords"
 )
 
 // QueryClient is the client API for Query service.
@@ -31,6 +32,8 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// Subsidy halving interval
 	SubsidyHalvingInterval(ctx context.Context, in *QuerySubsidyHalvingIntervalRequest, opts ...grpc.CallOption) (*QuerySubsidyHalvingIntervalResponse, error)
+	// AllMintRecords queries all mint records stored by the module.
+	AllMintRecords(ctx context.Context, in *QueryAllMintRecordsRequest, opts ...grpc.CallOption) (*QueryAllMintRecordsResponse, error)
 }
 
 type queryClient struct {
@@ -59,6 +62,15 @@ func (c *queryClient) SubsidyHalvingInterval(ctx context.Context, in *QuerySubsi
 	return out, nil
 }
 
+func (c *queryClient) AllMintRecords(ctx context.Context, in *QueryAllMintRecordsRequest, opts ...grpc.CallOption) (*QueryAllMintRecordsResponse, error) {
+	out := new(QueryAllMintRecordsResponse)
+	err := c.cc.Invoke(ctx, Query_AllMintRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -67,6 +79,8 @@ type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// Subsidy halving interval
 	SubsidyHalvingInterval(context.Context, *QuerySubsidyHalvingIntervalRequest) (*QuerySubsidyHalvingIntervalResponse, error)
+	// AllMintRecords queries all mint records stored by the module.
+	AllMintRecords(context.Context, *QueryAllMintRecordsRequest) (*QueryAllMintRecordsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -79,6 +93,9 @@ func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*Q
 }
 func (UnimplementedQueryServer) SubsidyHalvingInterval(context.Context, *QuerySubsidyHalvingIntervalRequest) (*QuerySubsidyHalvingIntervalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubsidyHalvingInterval not implemented")
+}
+func (UnimplementedQueryServer) AllMintRecords(context.Context, *QueryAllMintRecordsRequest) (*QueryAllMintRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllMintRecords not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -129,6 +146,24 @@ func _Query_SubsidyHalvingInterval_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_AllMintRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllMintRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).AllMintRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_AllMintRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).AllMintRecords(ctx, req.(*QueryAllMintRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -143,6 +178,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubsidyHalvingInterval",
 			Handler:    _Query_SubsidyHalvingInterval_Handler,
+		},
+		{
+			MethodName: "AllMintRecords",
+			Handler:    _Query_AllMintRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

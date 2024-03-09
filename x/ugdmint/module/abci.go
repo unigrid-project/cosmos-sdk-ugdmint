@@ -181,6 +181,16 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		if mErr != nil {
 			fmt.Println(mErr.Error())
 		}
+		mintRecord := types.MintRecord{
+			BlockHeight: ctx.BlockHeight(),
+			Account:     "target_account_address", // Replace with actual account
+			Amount:      mintedCoins,
+		}
+
+		err := k.SetMintRecord(ctx, mintRecord)
+		if err != nil {
+			fmt.Println("Error storing mints in the KVstore")
+		}
 		//fmt.Println("Coins have been minted")
 	}
 }
