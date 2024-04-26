@@ -89,7 +89,7 @@ func (mc *MintCache) cleanupCache() {
 }
 
 func GetCache() *MintCache {
-	fmt.Println("Getting cache")
+	//fmt.Println("Getting cache")
 	once.Do(func() {
 		c = NewCache()
 	})
