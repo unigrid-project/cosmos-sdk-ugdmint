@@ -66,13 +66,14 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 
 	err2 := k.MintCoins(goCtx, mintedCoins)
 	if err2 != nil {
+		fmt.Println("MintCoins error")
 		panic(err2)
-
 	}
 
 	// send the minted coins to the fee collector account
 	err = k.AddCollectedFees(ctx, mintedCoins)
 	if err != nil {
+		fmt.Println("AddCollectedFees error")
 		panic(err)
 	}
 
@@ -120,6 +121,7 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			accNum, err := k.GetNextAccountNumber(ctx)
 			if err != nil {
 				// Handle the error appropriately
+				fmt.Println("GetNextAccountNumber error")
 				panic(err)
 			}
 			baseAcc.SetAccountNumber(accNum)
@@ -130,6 +132,7 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			fmt.Println("Vesting Account:", vestingAcc)
 			// Set this new account in the keeper
 			if err := k.SetAccount(ctx, vestingAcc); err != nil {
+				fmt.Println("SetAccount error")
 				panic(err) // This panic will be caught by the defer above
 			}
 		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
