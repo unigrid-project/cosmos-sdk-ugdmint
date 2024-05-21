@@ -46,8 +46,8 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	params := k.GetParams(ctx)
 	height := uint64(ctx.BlockHeight())
 
-	bondedRatio, err := k.BondedRatio(ctx)
-	if err != nil {
+	bondedRatio, bondErr := k.BondedRatio(ctx)
+	if bondErr != nil {
 		fmt.Println("error getting bonded ratio")
 	}
 
@@ -64,17 +64,17 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		_, mintedCoin = mintedCoins.Find("fermi")
 	}
 
-	err2 := k.MintCoins(goCtx, mintedCoins)
-	if err2 != nil {
+	mintErr := k.MintCoins(goCtx, mintedCoins)
+	if mintErr != nil {
 		fmt.Println("MintCoins error")
-		panic(err2)
+		panic(mintErr)
 	}
 
 	// send the minted coins to the fee collector account
-	err = k.AddCollectedFees(ctx, mintedCoins)
-	if err != nil {
+	feesErr := k.AddCollectedFees(ctx, mintedCoins)
+	if feesErr != nil {
 		fmt.Println("AddCollectedFees error")
-		panic(err)
+		panic(feesErr)
 	}
 
 	if mintedCoin.Amount.IsInt64() {
@@ -94,12 +94,12 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	//Start the mint cache and minting of new tokens when there are any in hedgehog.
 	mc := types.GetCache()
 	//fmt.Printf("height: %d\n", height)
-	m, mErr := mc.Read(height)
-	if mErr == nil {
+	m, cacheErr := mc.Read(height)
+	if cacheErr == nil {
 		//fmt.Println("There were no errors when checking height. its time to mint to address!!")
-		acc, aErr := types.ConvertStringToAcc(m.Address)
+		acc, accErr := types.ConvertStringToAcc(m.Address)
 
-		if aErr != nil {
+		if accErr != nil {
 			fmt.Println("convert to account failed")
 			panic("error!!!!")
 		}
@@ -118,11 +118,11 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			// Ensure the account number is unique by getting the next account number from the keeper
 			// Get the next account number from the keeper
 			// Get the next account number from the keeper
-			accNum, err := k.GetNextAccountNumber(ctx)
-			if err != nil {
+			accNum, numErr := k.GetNextAccountNumber(ctx)
+			if numErr != nil {
 				// Handle the error appropriately
 				fmt.Println("GetNextAccountNumber error")
-				panic(err)
+				panic(numErr)
 			}
 			baseAcc.SetAccountNumber(accNum)
 			fmt.Printf("Setting new account number %d\n", accNum)
@@ -131,9 +131,9 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
 			fmt.Println("Vesting Account:", vestingAcc)
 			// Set this new account in the keeper
-			if err := k.SetAccount(ctx, vestingAcc); err != nil {
+			if setErr := k.SetAccount(ctx, vestingAcc); setErr != nil {
 				fmt.Println("SetAccount error")
-				panic(err) // This panic will be caught by the defer above
+				panic(setErr) // This panic will be caught by the defer above
 			}
 		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
@@ -180,9 +180,9 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		//fmt.Println("time to mint")
 		k.MintCoins(goCtx, coins)
 		//fmt.Printf("Coins are minted to address = %s\n", acc.String())
-		mErr := k.AddNewMint(ctx, coins, acc)
-		if mErr != nil {
-			fmt.Println(mErr.Error())
+		newMintErr := k.AddNewMint(ctx, coins, acc)
+		if newMintErr != nil {
+			fmt.Println(newMintErr.Error())
 		}
 		mintRecord := types.MintRecord{
 			BlockHeight: ctx.BlockHeight(),
@@ -190,8 +190,8 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			Amount:      mintedCoins,
 		}
 
-		err := k.SetMintRecord(ctx, mintRecord)
-		if err != nil {
+		setMintErr := k.SetMintRecord(ctx, mintRecord)
+		if setMintErr != nil {
 			fmt.Println("Error storing mints in the KVstore")
 		}
 		//fmt.Println("Coins have been minted")
