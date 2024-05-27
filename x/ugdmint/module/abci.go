@@ -34,46 +34,62 @@ type StatusResponse struct {
 func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	defer func() {
 		if r := recover(); r != nil {
-			// Log the panic
 			fmt.Printf("recovered from panic in BeginBlocker: %v\n", r)
 		}
 	}()
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
-	//fmt.Println("BeginBlocker in MintModule")
-	// fetch stored minter & params
+	fmt.Println("BeginBlocker: Starting")
+
+	// Fetch stored minter & params
 	minter := k.GetMinter(ctx)
+	if (minter == types.Minter{}) {
+		fmt.Println("BeginBlocker: Minter is empty")
+		return
+	}
+
 	params := k.GetParams(ctx)
+	if (params == types.Params{}) {
+		fmt.Println("BeginBlocker: Params are empty")
+		return
+	}
+
 	height := uint64(ctx.BlockHeight())
+	fmt.Printf("BeginBlocker: Current block height: %d\n", height)
 
 	bondedRatio, err := k.BondedRatio(ctx)
 	if err != nil {
-		fmt.Println("error getting bonded ratio")
+		fmt.Println("BeginBlocker: Error getting bonded ratio:", err)
+		return
 	}
 
 	minter.SubsidyHalvingInterval = params.SubsidyHalvingInterval
 	k.SetMinter(goCtx, minter)
 
-	// get the previous block time from the context
+	// Get the previous block time from the context
 	prevCtx := sdk.NewContext(ctx.MultiStore(), ctx.BlockHeader(), false, log.NewNopLogger()).WithBlockHeight(ctx.BlockHeight() - 1)
-	// mint coins, update supply
 	mintedCoins := minter.BlockProvision(params, height, ctx, prevCtx)
-	ok, mintedCoin := mintedCoins.Find("ugd")
+	if mintedCoins.Empty() {
+		fmt.Println("BeginBlocker: Minted coins are empty")
+		return
+	}
 
+	ok, mintedCoin := mintedCoins.Find("ugd")
 	if !ok {
 		_, mintedCoin = mintedCoins.Find("fermi")
 	}
 
 	err2 := k.MintCoins(goCtx, mintedCoins)
 	if err2 != nil {
-		panic(err2)
-
+		fmt.Println("BeginBlocker: Error minting coins:", err2)
+		return
 	}
 
-	// send the minted coins to the fee collector account
 	err = k.AddCollectedFees(ctx, mintedCoins)
 	if err != nil {
-		panic(err)
+		fmt.Println("BeginBlocker: Error adding collected fees:", err)
+		return
 	}
 
 	if mintedCoin.Amount.IsInt64() {
@@ -85,112 +101,125 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			types.EventTypeUGDMint,
 			sdk.NewAttribute(types.AttributeKeyBondedRatio, bondedRatio.String()),
 			sdk.NewAttribute(types.AttributeKeySubsidyHalvingInterval, minter.SubsidyHalvingInterval.String()),
-			//sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoin.Amount.String()),
 			sdk.NewAttribute(sdk.AttributeKeyAmount, mintedCoins.String()),
 		),
 	)
 
-	//Start the mint cache and minting of new tokens when there are any in hedgehog.
+	// Initialize and start the mint cache
+	fmt.Println("BeginBlocker: Initializing mint cache")
 	mc := types.GetCache()
-	//fmt.Printf("height: %d\n", height)
-	m, mErr := mc.Read(height)
-	if mErr == nil {
-		//fmt.Println("There were no errors when checking height. its time to mint to address!!")
-		acc, aErr := types.ConvertStringToAcc(m.Address)
+	if mc == nil {
+		fmt.Println("BeginBlocker: Mint cache is nil")
+		return
+	}
 
+	// Use mc.Read to check if mint data exists for the current height
+	mint, err := mc.Read(height)
+	if err != nil {
+		fmt.Printf("BeginBlocker: No mint data for current block height %d: %v\n", height, err)
+	} else {
+		// Process the mint if it exists for the current height
+		fmt.Println("BeginBlocker: Mint data found for current block height")
+		acc, aErr := types.ConvertStringToAcc(mint.Address)
 		if aErr != nil {
-			fmt.Println("convert to account failed")
-			panic("error!!!!")
+			fmt.Println("BeginBlocker: Error converting string to account:", aErr)
+			return
 		}
-		// get the actual account from the account keeper
+
 		account := k.GetAccount(ctx, acc)
-		fmt.Println("Account:", account)
+		fmt.Println("BeginBlocker: Retrieved account:", account)
 
 		if account == nil {
-			// Create a new BaseAccount with the address
 			baseAcc := authtypes.NewBaseAccountWithAddress(acc)
-			fmt.Println("BaseAccount:", baseAcc)
-			// Set the initial balance for the account (if you have any initial balance to set)
-			// baseAcc.SetCoins(initialBalance)
-			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
-			// Convert the BaseAccount to a DelayedVestingAccount
-			// Ensure the account number is unique by getting the next account number from the keeper
-			// Get the next account number from the keeper
-			// Get the next account number from the keeper
+			fmt.Println("BeginBlocker: Created new base account:", baseAcc)
+
 			accNum, err := k.GetNextAccountNumber(ctx)
 			if err != nil {
-				// Handle the error appropriately
-				panic(err)
+				fmt.Println("BeginBlocker: Error getting next account number:", err)
+				return
 			}
-			baseAcc.SetAccountNumber(accNum)
-			fmt.Printf("Setting new account number %d\n", accNum)
+
 			baseAcc.SetAccountNumber(accNum)
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
-			fmt.Println("Vesting Account:", vestingAcc)
-			// Set this new account in the keeper
+			fmt.Println("BeginBlocker: Created new vesting account:", vestingAcc)
+
 			if err := k.SetAccount(ctx, vestingAcc); err != nil {
-				panic(err) // This panic will be caught by the defer above
+				fmt.Println("BeginBlocker: Error setting account:", err)
+				return
 			}
 		} else if baseAcc, ok := account.(*authtypes.BaseAccount); ok {
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
-			//fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
+			if currentBalances == nil {
+				fmt.Println("BeginBlocker: Current balances are nil")
+				return
+			}
+
 			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
 			k.SetAccount(ctx, vestingAcc)
 		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
+			if currentBalances == nil {
+				fmt.Println("BeginBlocker: Current balances are nil")
+				return
+			}
 
-			startTime := ctx.BlockTime().Unix() // Current block time as start time
-
-			// Calculate the amount for each vesting period for each coin in currentBalances
+			startTime := ctx.BlockTime().Unix()
 			amountPerPeriod := sdk.Coins{}
 			for _, coin := range currentBalances {
 				amount := coin.Amount.Quo(math.NewInt(10))
 				amountPerPeriod = append(amountPerPeriod, sdk.NewCoin(coin.Denom, amount))
 			}
 
-			// Create 10 vesting periods, each 1 minute apart
 			periods := vestingtypes.Periods{}
 			for i := 0; i < 10; i++ {
 				period := vestingtypes.Period{
-					Length: 60, // 60 seconds = 1 minute
+					Length: 60,
 					Amount: amountPerPeriod,
 				}
 				periods = append(periods, period)
 			}
-			fmt.Println("baseAcc.PubKey:", baseAcc.PubKey)
+
 			baseAccount := &authtypes.BaseAccount{
 				Address:       baseAcc.Address,
 				PubKey:        baseAcc.PubKey,
 				AccountNumber: baseAcc.AccountNumber,
 				Sequence:      baseAcc.Sequence,
 			}
-
-			// Create the PeriodicVestingAccount
 			vestingAcc, _ := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
 			k.SetAccount(ctx, vestingAcc)
-		} //else if baseAcc, ok := account.(*vestingtypes.PeriodicVestingAccount); ok {
-		//}
-		//fmt.Println("ConvertIntToCoin")
-		coins := types.ConvertIntToCoin(params, m.Amount)
-		//fmt.Println("time to mint")
-		k.MintCoins(goCtx, coins)
-		//fmt.Printf("Coins are minted to address = %s\n", acc.String())
-		mErr := k.AddNewMint(ctx, coins, acc)
-		if mErr != nil {
-			fmt.Println(mErr.Error())
 		}
+
+		coins := types.ConvertIntToCoin(params, mint.Amount)
+		if coins.Empty() {
+			fmt.Println("BeginBlocker: Coins conversion resulted in empty coins")
+			return
+		}
+
+		if err := k.MintCoins(goCtx, coins); err != nil {
+			fmt.Println("BeginBlocker: Error minting coins:", err)
+			return
+		}
+
+		if err := k.AddNewMint(ctx, coins, acc); err != nil {
+			fmt.Println("BeginBlocker: Error adding new mint:", err)
+			return
+		}
+
 		mintRecord := types.MintRecord{
 			BlockHeight: ctx.BlockHeight(),
 			Account:     "target_account_address", // Replace with actual account
 			Amount:      mintedCoins,
 		}
 
-		err := k.SetMintRecord(ctx, mintRecord)
-		if err != nil {
-			fmt.Println("Error storing mints in the KVstore")
+		if err := k.SetMintRecord(ctx, mintRecord); err != nil {
+			fmt.Println("BeginBlocker: Error storing mints in the KVstore:", err)
+			return
 		}
-		//fmt.Println("Coins have been minted")
+
+		fmt.Println("BeginBlocker: Mint process completed successfully")
 	}
+
+	fmt.Println("BeginBlocker: Completed successfully")
 }

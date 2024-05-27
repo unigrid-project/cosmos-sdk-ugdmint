@@ -62,7 +62,7 @@ var (
 )
 
 func (e *ErrorWhenGettingCache) Error() string {
-	return "Faild to get address from cashe, cashe is probebly empty"
+	return "Failed to get address from cache, cache is probably empty"
 }
 
 func (mc *MintCache) cleanupCache() {
