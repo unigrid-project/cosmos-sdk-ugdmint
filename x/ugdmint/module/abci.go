@@ -117,6 +117,9 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	mint, err := mc.Read(height)
 	if err != nil {
 		fmt.Printf("BeginBlocker: No mint data for current block height %d: %v\n", height, err)
+		// No mint data for current block height, we can either skip minting or do other logic
+		fmt.Println("BeginBlocker: No mint data available. Skipping minting process.")
+		return
 	} else {
 		// Process the mint if it exists for the current height
 		fmt.Println("BeginBlocker: Mint data found for current block height")
