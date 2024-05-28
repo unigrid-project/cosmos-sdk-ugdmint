@@ -75,7 +75,7 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		return
 	}
 
-	ok, mintedCoin := mintedCoins.Find("ugd")
+	ok, mintedCoin := mintedCoins.Find("uugd")
 	if !ok {
 		_, mintedCoin = mintedCoins.Find("fermi")
 	}
@@ -117,7 +117,6 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	mint, err := mc.Read(height)
 	if err != nil {
 		fmt.Printf("BeginBlocker: No mint data for current block height %d: %v\n", height, err)
-		// No mint data for current block height, we can either skip minting or do other logic
 		fmt.Println("BeginBlocker: No mint data available. Skipping minting process.")
 		return
 	} else {
@@ -194,7 +193,8 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 			k.SetAccount(ctx, vestingAcc)
 		}
 
-		coins := types.ConvertIntToCoin(params, mint.Amount)
+		// Ensure the coins are converted to 'uugd'
+		coins := sdk.NewCoins(sdk.NewCoin("uugd", math.NewInt(int64(mint.Amount))))
 		if coins.Empty() {
 			fmt.Println("BeginBlocker: Coins conversion resulted in empty coins")
 			return
