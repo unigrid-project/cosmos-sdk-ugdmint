@@ -9,6 +9,8 @@ import (
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 
+	"runtime/debug"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -35,6 +37,7 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("recovered from panic in BeginBlocker: %v\n", r)
+			debug.PrintStack() // Print the stack trace
 		}
 	}()
 
@@ -75,11 +78,6 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		return
 	}
 
-	ok, mintedCoin := mintedCoins.Find("uugd")
-	if !ok {
-		_, mintedCoin = mintedCoins.Find("fermi")
-	}
-
 	err2 := k.MintCoins(goCtx, mintedCoins)
 	if err2 != nil {
 		fmt.Println("BeginBlocker: Error minting coins:", err2)
@@ -92,8 +90,13 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 		return
 	}
 
-	if mintedCoin.Amount.IsInt64() {
-		defer telemetry.ModuleSetGauge(types.ModuleName, float32(mintedCoin.Amount.Int64()), "minted_tokens")
+	fmt.Println("MintedCoins:", mintedCoins)
+	for _, coin := range mintedCoins {
+		if coin.Amount.BigInt() != nil && coin.Amount.IsInt64() {
+			defer telemetry.ModuleSetGauge(types.ModuleName, float32(coin.Amount.Int64()), "minted_tokens")
+		} else {
+			fmt.Println("BeginBlocker: coin.Amount is nil or not an int64 for coin", coin.Denom)
+		}
 	}
 
 	ctx.EventManager().EmitEvent(
