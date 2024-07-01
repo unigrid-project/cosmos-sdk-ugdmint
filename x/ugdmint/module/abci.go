@@ -146,7 +146,19 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 
 			baseAcc.SetAccountNumber(accNum)
 			endTime := ctx.BlockTime().Add(10 * 365 * 24 * time.Hour) // 10 years from now
-			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, sdk.Coins{}, endTime.Unix())
+
+			// Mint the coins first and include them in the original vesting
+			coins := sdk.NewCoins(sdk.NewCoin("uugd", math.NewInt(int64(mint.Amount))))
+			if err := k.MintCoins(goCtx, coins); err != nil {
+				fmt.Println("BeginBlocker: Error minting coins:", err)
+				return
+			}
+
+			vestingAcc, err := vestingtypes.NewDelayedVestingAccount(baseAcc, coins, endTime.Unix())
+			if err != nil {
+				fmt.Println("BeginBlocker: Error creating vesting account:", err)
+				return
+			}
 			fmt.Println("BeginBlocker: Created new vesting account:", vestingAcc)
 
 			if err := k.SetAccount(ctx, vestingAcc); err != nil {
@@ -161,8 +173,15 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 				return
 			}
 
-			vestingAcc, _ := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
-			k.SetAccount(ctx, vestingAcc)
+			vestingAcc, err := vestingtypes.NewDelayedVestingAccount(baseAcc, currentBalances, endTime.Unix())
+			if err != nil {
+				fmt.Println("BeginBlocker: Error creating vesting account:", err)
+				return
+			}
+			if err := k.SetAccount(ctx, vestingAcc); err != nil {
+				fmt.Println("BeginBlocker: Error setting account:", err)
+				return
+			}
 		} else if baseAcc, ok := account.(*vestingtypes.DelayedVestingAccount); ok {
 			currentBalances := k.GetAllBalances(ctx, baseAcc.GetAddress())
 			if currentBalances == nil {
@@ -192,8 +211,15 @@ func BeginBlocker(goCtx context.Context, k keeper.Keeper) {
 				AccountNumber: baseAcc.AccountNumber,
 				Sequence:      baseAcc.Sequence,
 			}
-			vestingAcc, _ := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
-			k.SetAccount(ctx, vestingAcc)
+			vestingAcc, err := vestingtypes.NewPeriodicVestingAccount(baseAccount, currentBalances, startTime, periods)
+			if err != nil {
+				fmt.Println("BeginBlocker: Error creating periodic vesting account:", err)
+				return
+			}
+			if err := k.SetAccount(ctx, vestingAcc); err != nil {
+				fmt.Println("BeginBlocker: Error setting account:", err)
+				return
+			}
 		}
 
 		// Ensure the coins are converted to 'uugd'
